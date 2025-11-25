@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>匹配结果测试工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .info-box {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+        .error-box {
+            background-color: #ffebee;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #e53935;
+        }
+        .success-box {
+            background-color: #e8f5e9;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #43a047;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>匹配结果测试工具</h1>
+        <p>此工具用于测试学生端和老师端的匹配结果显示功能。</p>
+        
+        <div class="info-box">
+            <h3>使用说明：</h3>
+            <ol>
+                <li>首先初始化测试数据</li>
+                <li>然后模拟运行匹配算法</li>
+                <li>最后在浏览器中分别登录学生账号和老师账号查看匹配结果</li>
+            </ol>
+        </div>
+        
+        <h2>测试操作</h2>
+        <button id="initTestData">初始化测试数据</button>
+        <button id="runTestMatching">模拟匹配算法</button>
+        <button id="clearData">清空测试数据</button>
+        <button id="viewResults">查看当前匹配结果</button>
+        
+        <div id="messageBox" style="margin-top: 20px;"></div>
+        
+        <div id="resultsView" style="display: none; margin-top: 20px;">
+            <h2>当前匹配结果</h2>
+            <div id="resultsList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化测试数据
+        document.getElementById('initTestData').addEventListener('click', function() {
+            try {
+                // 创建测试学生数据
+                const students = [
+                    { id: '20210001', name: '张三', major: '计算机科学与技术', grade: '2021', class: '计科1班', phone: '13800138001', password: '123456' },
+                    { id: '20210002', name: '李四', major: '软件工程', grade: '2021', class: '软工2班', phone: '13800138002', password: '123456' },
+                    { id: '20210003', name: '王五', major: '计算机科学与技术', grade: '2021', class: '计科1班', phone: '13800138003', password: '123456' },
+                    { id: '20210004', name: '赵六', major: '软件工程', grade: '2021', class: '软工2班', phone: '13800138004', password: '123456' }
+                ];
+                
+                // 创建测试老师数据
+                const teachers = [
+                    { id: 'T001', name: '李教授', direction: '人工智能', introduction: '专注于机器学习和深度学习研究' },
+                    { id: 'T002', name: '王副教授', direction: '云计算', introduction: '专注于分布式系统和云计算研究' }
+                ];
+                
+                // 创建测试团队数据
+                const teams = [
+                    { id: 'team001', name: 'AI研究小组', leaderId: '20210001', members: ['20210001', '20210002'], direction: '人工智能' },
+                    { id: 'team002', name: '云计算探索队', leaderId: '20210003', members: ['20210003', '20210004'], direction: '云计算' }
+                ];
+                
+                // 保存到localStorage
+                localStorage.setItem('studentsData', JSON.stringify(students));
+                localStorage.setItem('teachersData', JSON.stringify(teachers));
+                localStorage.setItem('teamsData', JSON.stringify(teams));
+                
+                showMessage('测试数据初始化成功！已创建2个学生团队和2个老师账号。', 'success');
+            } catch (error) {
+                showMessage('初始化数据失败: ' + error.message, 'error');
+            }
+        });
+        
+        // 模拟运行匹配算法
+        document.getElementById('runTestMatching').addEventListener('click', function() {
+            try {
+                // 模拟匹配结果
+                const matchingResults = [
+                    { teamId: 'team001', teacherId: 'T001', score: 95.5 },
+                    { teamId: 'team002', teacherId: 'T002', score: 92.0 }
+                ];
+                
+                // 保存匹配结果到localStorage和window对象
+                localStorage.setItem('matchingResultsData', JSON.stringify(matchingResults));
+                window.matchingResultsData = matchingResults;
+                
+                showMessage('模拟匹配成功！已生成匹配结果，学生团队1匹配到李教授，团队2匹配到王副教授。', 'success');
+            } catch (error) {
+                showMessage('模拟匹配失败: ' + error.message, 'error');
+            }
+        });
+        
+        // 清空测试数据
+        document.getElementById('clearData').addEventListener('click', function() {
+            try {
+                localStorage.removeItem('studentsData');
+                localStorage.removeItem('teachersData');
+                localStorage.removeItem('teamsData');
+                localStorage.removeItem('matchingResultsData');
+                window.matchingResultsData = null;
+                
+                document.getElementById('resultsView').style.display = 'none';
+                document.getElementById('resultsList').innerHTML = '';
+                
+                showMessage('测试数据已清空！', 'success');
+            } catch (error) {
+                showMessage('清空数据失败: ' + error.message, 'error');
+            }
+        });
+        
+        // 查看当前匹配结果
+        document.getElementById('viewResults').addEventListener('click', function() {
+            try {
+                const results = JSON.parse(localStorage.getItem('matchingResultsData') || '[]');
+                const resultsList = document.getElementById('resultsList');
+                
+                if (results.length === 0) {
+                    resultsList.innerHTML = '<p class="error-box">当前没有匹配结果数据</p>';
+                } else {
+                    let html = '<table border="1" cellpadding="5" cellspacing="0" style="width: 100%;">';
+                    html += '<tr style="background-color: #f2f2f2;"><th>团队ID</th><th>老师ID</th><th>匹配分数</th></tr>';
+                    
+                    results.forEach(result => {
+                        html += `<tr>
+                            <td>${result.teamId}</td>
+                            <td>${result.teacherId}</td>
+                            <td>${result.score}</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</table>';
+                    resultsList.innerHTML = html;
+                }
+                
+                document.getElementById('resultsView').style.display = 'block';
+            } catch (error) {
+                showMessage('查看结果失败: ' + error.message, 'error');
+            }
+        });
+        
+        // 显示消息
+        function showMessage(message, type = 'info') {
+            const messageBox = document.getElementById('messageBox');
+            let className = 'info-box';
+            
+            if (type === 'error') className = 'error-box';
+            else if (type === 'success') className = 'success-box';
+            
+            messageBox.innerHTML = `<div class="${className}">${message}</div>`;
+            
+            // 5秒后自动清除消息
+            setTimeout(() => {
+                messageBox.innerHTML = '';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

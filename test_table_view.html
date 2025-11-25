@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试学生组表格显示</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>学生组表格显示测试</h2>
+        
+        <div class="table-container">
+            <table id="testTeamTable" class="data-table">
+                <thead>
+                    <tr>
+                        <th>组ID</th>
+                        <th>组名</th>
+                        <th>组长</th>
+                        <th>成员数量</th>
+                        <th>成员列表</th>
+                        <th>毕业设计题目</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="testTeamTableBody">
+                    <!-- 表格内容将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <h3>说明：</h3>
+            <p>1. 这是一个测试页面，用于展示学生组表格的样式和布局</p>
+            <p>2. 实际的教师页面中，表格将在登录后动态加载真实数据</p>
+            <p>3. 请确保CSS样式已正确加载，表格应显示完整的边框、背景和行高</p>
+            <p>4. 点击下方按钮刷新页面，或直接访问 <a href="teacher.html">teacher.html</a> 查看实际效果</p>
+            <button onclick="location.reload()" class="btn btn-primary">刷新页面</button>
+        </div>
+    </div>
+
+    <script>
+        // 模拟数据
+        const mockTeams = [
+            {
+                id: "T001",
+                name: "创新研究团队",
+                leaderId: "S001",
+                members: ["S001", "S002", "S003"],
+                topic: {
+                    name: "人工智能辅助教学系统研究",
+                    description: "开发基于AI的智能教学辅助工具"
+                }
+            },
+            {
+                id: "T002", 
+                name: "前端精英小组",
+                leaderId: "S004",
+                members: ["S004", "S005"],
+                topic: {
+                    name: "响应式Web应用设计与实现",
+                    description: "研究现代Web前端技术在响应式设计中的应用"
+                }
+            },
+            {
+                id: "T003",
+                name: "后端开发团队",
+                leaderId: "S006",
+                members: ["S006", "S007", "S008", "S009"],
+                topic: {
+                    name: "微服务架构设计与性能优化",
+                    description: "探索微服务架构在大型应用中的实践"
+                }
+            }
+        ];
+        
+        // 模拟学生数据
+        const mockStudents = {
+            "S001": { id: "S001", name: "张三" },
+            "S002": { id: "S002", name: "李四" },
+            "S003": { id: "S003", name: "王五" },
+            "S004": { id: "S004", name: "赵六" },
+            "S005": { id: "S005", name: "孙七" },
+            "S006": { id: "S006", name: "周八" },
+            "S007": { id: "S007", name: "吴九" },
+            "S008": { id: "S008", name: "郑十" },
+            "S009": { id: "S009", name: "钱十一" }
+        };
+        
+        // 模拟获取学生信息函数
+        function getStudentById(studentId) {
+            return mockStudents[studentId] || null;
+        }
+        
+        // 加载测试数据到表格
+        function loadTestData() {
+            const tableBody = document.getElementById('testTeamTableBody');
+            
+            mockTeams.forEach(team => {
+                const row = document.createElement('tr');
+                
+                // 获取组长信息
+                const leader = getStudentById(team.leaderId);
+                const leaderName = leader ? `${leader.name} (${leader.id})` : '-';
+                
+                // 获取成员列表
+                const memberList = team.members.map(memberId => {
+                    const member = getStudentById(memberId);
+                    return member ? member.name : memberId;
+                }).join(', ');
+                
+                row.innerHTML = `
+                    <td>${team.id}</td>
+                    <td>${team.name}</td>
+                    <td>${leaderName}</td>
+                    <td>${team.members.length}</td>
+                    <td>${memberList}</td>
+                    <td>${team.topic.name}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info">查看详情</button>
+                        <button class="btn btn-sm btn-primary">选择该组</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 页面加载完成后执行
+        window.onload = function() {
+            loadTestData();
+        };
+    </script>
+</body>
+</html>

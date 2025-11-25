@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导师端 - 毕业设计师生双选系统</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="navbar">
+        <div class="navbar-brand">
+            <h1>毕业设计师生双选系统</h1>
+        </div>
+        <nav class="nav-menu">
+            <a href="#personalInfo" class="nav-link">个人信息</a>
+            <a href="#researchDirection" class="nav-link">研究方向</a>
+            <a href="#notifications" class="nav-link">系统公告</a>
+            <a href="#studentGroups" class="nav-link">学生组浏览</a>
+            <a href="#groupSelection" class="nav-link">学生组选择</a>
+            <a href="#matchResult" class="nav-link">匹配结果</a>
+        </nav>
+        <div class="user-controls">
+            <span class="user-info">欢迎您，<span id="userName">导师</span></span>
+            <button class="btn btn-danger" id="logoutBtn">退出登录</button>
+        </div>
+    </header>
+
+    <!-- 主内容区域 -->
+    <main class="main-content">
+        <!-- 教师仪表盘概览 -->
+        <section id="dashboard" class="section">
+            <div class="card">
+                <h3>教师仪表盘概览</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                    <div class="dashboard-card pulse-animation">
+                        <h4>学生组选择进度</h4>
+                        <div class="dashboard-number">0/5</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="dashboard-card float-animation">
+                        <h4>已匹配学生组</h4>
+                        <div class="dashboard-number">0</div>
+                    </div>
+                    <div class="dashboard-card slide-in-animation">
+                        <h4>研究方向数量</h4>
+                        <div class="dashboard-number">0</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 个人信息模块 -->
+        <section id="personalInfo" class="section">
+            <div class="card">
+                <h3>个人信息</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">工号：</span>
+                        <span class="info-value" id="teacherId">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">姓名：</span>
+                        <span class="info-value" id="teacherName">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">职称：</span>
+                        <span class="info-value" id="teacherTitle">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">专业：</span>
+                        <span class="info-value" id="teacherMajor">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">联系电话：</span>
+                        <span class="info-value" id="teacherPhone">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">邮箱：</span>
+                        <span class="info-value" id="teacherEmail">--</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-primary" id="editInfoBtn">编辑信息</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 研究方向模块 -->
+        <section id="researchDirection" class="section">
+            <div class="card">
+                <h3>研究方向</h3>
+                <div id="researchForm">
+                    <div class="form-group">
+                        <label for="researchInput">研究方向：</label>
+                        <textarea id="researchInput" rows="4" placeholder="请详细描述您的主要研究方向和感兴趣的领域..." class="form-control"></textarea>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="submitResearchBtn">提交研究方向</button>
+                    </div>
+                </div>
+                
+                <!-- 研究方向编辑表单 -->
+                <div id="researchEditForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="editResearchInput">编辑研究方向：</label>
+                        <textarea class="form-control" id="editResearchInput" rows="4" placeholder="请详细描述您的主要研究方向和感兴趣的领域..."></textarea>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-primary" id="saveResearchBtn">保存修改</button>
+                        <button class="btn btn-secondary" id="cancelEditBtn">取消</button>
+                    </div>
+                </div>
+                <div id="researchInfo" style="display: none;">
+                    <div class="success-icon">🎯</div>
+                    <h4>已提交研究方向</h4>
+                    <div class="research-content">
+                        <p id="savedResearch">--</p>
+                    </div>
+                    <div class="meta-info">
+                        <small id="researchSubmitDate">--</small>
+                    </div>
+                    <div class="card-actions">
+                        <button class="btn btn-secondary" id="editResearchBtn">编辑研究方向</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生组浏览模块 -->
+        <section id="studentGroups" class="section">
+            <div class="card">
+                <h3>学生组浏览</h3>
+                <div class="search-container">
+                    <div class="form-row">
+                        <div class="form-group search-group" style="display: flex; gap: 10px; align-items: center;">
+                            <select id="majorFilter" class="form-control" style="width: 200px;">
+                                <option value="">全部专业</option>
+                                <!-- 专业选项将由JavaScript动态填充 -->
+                            </select>
+                            <input type="text" id="groupSearch" placeholder="搜索团队名称、题目或成员..." class="form-control">
+                            <button class="btn btn-primary search-btn">搜索</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table id="teamTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>序号</th>
+                                <th>组名</th>
+                                <th>组长</th>
+                                <th>成员数量</th>
+                                <th>成员列表</th>
+                                <th>毕业设计题目</th>
+                                <th>课题描述</th>
+                            </tr>
+                        </thead>
+                        <tbody id="teamTableBody">
+                            <!-- 表格内容将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                    <div class="empty-state" id="emptyTeamState" style="display: none;">
+                        <div class="empty-icon">📚</div>
+                        <p>暂无学生组数据</p>
+                    </div>
+                    <div class="empty-state" id="emptySearchState" style="display: none;">
+                        <div class="empty-icon">🔍</div>
+                        <p>未找到匹配的学生组</p>
+                        <button class="btn btn-default" onclick="clearSearch()">清除搜索条件</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 学生组选择模块 -->
+        <section id="groupSelection" class="section">
+            <div class="card">
+                <h3>学生组选择</h3>
+                <div class="message message-info">
+                    <strong>提示：</strong>请从学生组浏览中选择最多5个学生组，按优先级排序。
+                </div>
+                <div id="selectedGroups">
+                    <h4>已选择的学生组</h4>
+                    <div id="selectedGroupsList" class="priority-list" style="margin-bottom: 20px;"></div>
+                    <div class="selection-status">
+                        <span id="selectionCount" class="count" style="font-size: 1.1rem; color: #4f46e5; font-weight: 600; margin-right: 20px;">已选择：0/5</span>
+                        <button class="btn btn-primary" id="confirmSelectionBtn" disabled>确认选择</button>
+                    </div>
+                </div>
+                <style>
+                    .priority-list {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 15px;
+                    }
+                    
+                    .priority-list .team-card {
+                        display: flex;
+                        align-items: center;
+                        padding: 15px;
+                        background: white;
+                        border-radius: 12px;
+                        border: 1px solid #e2e8f0;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .priority-list .team-card:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .priority-list .priority-badge {
+                        background: #4f46e5;
+                        color: white;
+                        width: 28px;
+                        height: 28px;
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-weight: bold;
+                        margin-right: 15px;
+                        flex-shrink: 0;
+                    }
+                </style>
+            </div>
+        </section>
+
+        <!-- 匹配结果模块 -->
+        <section id="matchResult" class="section">
+            <div class="card pulse-animation">
+                <h3>匹配结果</h3>
+                <div class="message message-warning" id="resultNotReady">
+                    <strong>等待中：</strong>系统正在进行匹配，请稍后查看结果。
+                </div>
+                <div id="matchResultInfo" style="display: none;">
+                    <div class="success-icon">🎯</div>
+                    <h4>匹配结果已完成</h4>
+                    <div id="matchedTeams" class="matched-results">
+                        <!-- 匹配结果将通过JavaScript动态生成 -->
+                    </div>
+                    <div class="card-actions" style="margin-top: 20px;">
+                        <button class="btn btn-primary" id="viewDetailsBtn">查看详细信息</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 公告模块 -->
+        <section id="notifications" class="section">
+            <div class="card">
+                <h3>系统公告</h3>
+                <div class="search-container">
+                    <input type="text" id="notificationSearch" placeholder="搜索公告标题..." class="form-control">
+                    <button class="btn btn-primary search-btn">搜索</button>
+                </div>
+                <div id="notificationList" class="notification-list">
+                    <!-- 公告列表将通过JavaScript动态生成 -->
+                </div>
+                <div class="empty-state" id="emptyNotificationState" style="display: none;">
+                    <div class="empty-icon">📢</div>
+                    <p>暂无系统公告</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 编辑信息模态框 -->
+    <div id="editInfoModal" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>编辑个人信息</h3>
+                    <button type="button" class="close-modal" aria-label="关闭">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="editPhone">联系电话：</label>
+                        <input type="text" id="editPhone" placeholder="请输入联系电话" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">邮箱：</label>
+                        <input type="email" id="editEmail" placeholder="请输入邮箱" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="cancelEditBtn">取消</button>
+                    <button type="button" class="btn btn-primary" id="saveInfoBtn">保存更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 公告详情模态框 -->
+    <div id="notificationDetailModal" class="modal" style="display: none;">
+        <div class="modal-backdrop"></div>
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="modalNotificationTitle">公告详情</h3>
+                    <button type="button" class="close-modal" aria-label="关闭">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="notification-detail">
+                        <p class="notification-meta">
+                            <strong>发布人：</strong><span id="modalNotificationAuthor"></span>
+                        </p>
+                        <p class="notification-meta">
+                            <strong>发布时间：</strong><span id="modalNotificationTime"></span>
+                        </p>
+                        <div class="notification-content" id="modalNotificationContent">
+                            <!-- 公告内容将通过JavaScript动态填充 -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="closeNotificationBtn">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/data.js"></script>
+    <script src="js/notifications.js"></script>
+    <script src="js/teacher.js"></script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试学生组志愿和老师选择显示</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+        }
+        h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .secondary-btn {
+            background-color: #6c757d;
+        }
+        .secondary-btn:hover {
+            background-color: #5a6268;
+        }
+        .warning-btn {
+            background-color: #ff9800;
+        }
+        .warning-btn:hover {
+            background-color: #e68900;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .test-info {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>测试学生组志愿和老师选择显示功能</h1>
+        
+        <div class="test-info">
+            <h2>功能说明</h2>
+            <p>本页面用于测试管理员端显示学生组志愿和老师选择功能的实现。通过创建模拟数据，可以验证数据是否正确加载和显示。</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>1. 生成测试数据</h2>
+            <button id="generateTestData">生成模拟数据</button>
+            <button id="checkData" class="secondary-btn">查看当前数据</button>
+            <button id="clearData" class="warning-btn">清除所有数据</button>
+            <div id="dataResult" class="result" style="display: none;">
+                <pre id="dataPreview"></pre>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>2. 测试管理员页面功能</h2>
+            <p>生成测试数据后，请访问 <a href="admin.html" target="_blank">管理员页面</a> 查看学生组志愿和老师选择的显示效果。</p>
+            <button id="openAdminPage">在新窗口打开管理员页面</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>3. 测试用例</h2>
+            <h3>学生组志愿显示测试</h3>
+            <ul>
+                <li>验证学生组志愿表格是否正确显示</li>
+                <li>检查组名、组长、成员、研究方向、志愿等信息是否正确</li>
+                <li>测试搜索功能是否正常工作</li>
+                <li>验证空状态显示是否正确</li>
+            </ul>
+            
+            <h3>老师选择显示测试</h3>
+            <ul>
+                <li>验证老师选择表格是否正确显示</li>
+                <li>检查老师信息和选择的学生组是否正确</li>
+                <li>测试搜索功能是否正常工作</li>
+                <li>验证空状态显示是否正确</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // 生成模拟数据
+        document.getElementById('generateTestData').addEventListener('click', function() {
+            // 生成模拟学生数据
+            const students = [
+                { id: '1001', name: '张三', major: '计算机科学与技术', grade: '2023', class: '23级计算机01班' },
+                { id: '1002', name: '李四', major: '计算机科学与技术', grade: '2023', class: '23级计算机01班' },
+                { id: '1003', name: '王五', major: '软件工程', grade: '2023', class: '23级软件01班' },
+                { id: '1004', name: '赵六', major: '软件工程', grade: '2023', class: '23级软件01班' },
+                { id: '1005', name: '钱七', major: '网络工程', grade: '2023', class: '23级网络01班' }
+            ];
+            
+            // 生成模拟老师数据
+            const teachers = [
+                { id: 't001', name: '陈教授', major: '计算机科学与技术', title: '教授', research: '人工智能' },
+                { id: 't002', name: '李副教授', major: '计算机科学与技术', title: '副教授', research: '机器学习' },
+                { id: 't003', name: '王讲师', major: '软件工程', title: '讲师', research: '软件工程' },
+                { id: 't004', name: '张教授', major: '软件工程', title: '教授', research: '大数据' },
+                { id: 't005', name: '刘副教授', major: '网络工程', title: '副教授', research: '计算机网络' }
+            ];
+            
+            // 生成模拟团队数据
+            const teams = [
+                {
+                    id: 'team1',
+                    name: '人工智能研究小组',
+                    members: ['1001', '1002'],
+                    direction: '人工智能应用开发'
+                },
+                {
+                    id: 'team2',
+                    name: '数据可视化团队',
+                    members: ['1003', '1004'],
+                    direction: '大数据可视化'
+                },
+                {
+                    id: 'team3',
+                    name: '网络安全小组',
+                    members: ['1005'],
+                    direction: '网络安全技术'
+                }
+            ];
+            
+            // 生成模拟学生组志愿数据
+            const studentPreferences = [
+                {
+                    teamId: 'team1',
+                    preferences: ['t001', 't002', 't004'],
+                    submitDate: '2024-01-20'
+                },
+                {
+                    teamId: 'team2',
+                    preferences: ['t003', 't004', 't001'],
+                    submitDate: '2024-01-21'
+                },
+                {
+                    teamId: 'team3',
+                    preferences: ['t005', 't001', 't003'],
+                    submitDate: '2024-01-22'
+                }
+            ];
+            
+            // 生成模拟老师选择数据
+            const teacherPreferences = [
+                {
+                    teacherId: 't001',
+                    selectedGroups: ['team1', 'team3', 'team2'],
+                    submitDate: '2024-01-20'
+                },
+                {
+                    teacherId: 't003',
+                    selectedGroups: ['team2', 'team1'],
+                    submitDate: '2024-01-21'
+                },
+                {
+                    teacherId: 't005',
+                    selectedGroups: ['team3'],
+                    submitDate: '2024-01-22'
+                }
+            ];
+            
+            // 保存到localStorage
+            localStorage.setItem('studentsData', JSON.stringify(students));
+            localStorage.setItem('teachersData', JSON.stringify(teachers));
+            localStorage.setItem('teamsData', JSON.stringify(teams));
+            localStorage.setItem('studentPreferencesData', JSON.stringify(studentPreferences));
+            localStorage.setItem('teacherPreferencesData', JSON.stringify(teacherPreferences));
+            
+            // 显示成功信息
+            alert('测试数据生成成功！');
+        });
+        
+        // 查看当前数据
+        document.getElementById('checkData').addEventListener('click', function() {
+            const students = localStorage.getItem('studentsData') || '[]';
+            const teachers = localStorage.getItem('teachersData') || '[]';
+            const teams = localStorage.getItem('teamsData') || '[]';
+            const studentPrefs = localStorage.getItem('studentPreferencesData') || '[]';
+            const teacherPrefs = localStorage.getItem('teacherPreferencesData') || '[]';
+            
+            const data = {
+                students: JSON.parse(students).length,
+                teachers: JSON.parse(teachers).length,
+                teams: JSON.parse(teams).length,
+                studentPreferences: JSON.parse(studentPrefs).length,
+                teacherPreferences: JSON.parse(teacherPrefs).length
+            };
+            
+            document.getElementById('dataPreview').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('dataResult').style.display = 'block';
+        });
+        
+        // 清除所有数据
+        document.getElementById('clearData').addEventListener('click', function() {
+            if (confirm('确定要清除所有测试数据吗？')) {
+                localStorage.removeItem('studentsData');
+                localStorage.removeItem('teachersData');
+                localStorage.removeItem('teamsData');
+                localStorage.removeItem('studentPreferencesData');
+                localStorage.removeItem('teacherPreferencesData');
+                alert('所有数据已清除！');
+                document.getElementById('dataResult').style.display = 'none';
+            }
+        });
+        
+        // 打开管理员页面
+        document.getElementById('openAdminPage').addEventListener('click', function() {
+            window.open('admin.html', '_blank');
+        });
+    </script>
+</body>
+</html>

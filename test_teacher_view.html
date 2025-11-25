@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试教师端学生组查看功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .button-group {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .warning {
+            background-color: #f44336;
+        }
+        .warning:hover {
+            background-color: #da190b;
+        }
+        .info {
+            background-color: #2196F3;
+        }
+        .info:hover {
+            background-color: #0b7dda;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试教师端学生组查看功能</h1>
+    
+    <div class="section">
+        <h2>测试数据管理</h2>
+        <p>使用以下按钮生成测试数据、检查数据或清除数据：</p>
+        <div class="button-group">
+            <button id="generateTestData">生成测试数据</button>
+            <button id="checkData">检查数据</button>
+            <button id="clearData" class="warning">清除测试数据</button>
+            <button id="loginAsTeacher" class="info">以教师身份登录</button>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>数据预览</h2>
+        <pre id="dataPreview"></pre>
+    </div>
+    
+    <div class="section">
+        <h2>使用说明</h2>
+        <ol>
+            <li>点击"生成测试数据"按钮创建一些学生、教师和学生组测试数据</li>
+            <li>点击"检查数据"按钮查看生成的数据</li>
+            <li>点击"以教师身份登录"按钮跳转到教师页面</li>
+            <li>在教师页面中，你可以：
+                <ul>
+                    <li>浏览学生组列表</li>
+                    <li>点击"查看详情"按钮查看学生组详细信息</li>
+                    <li>使用搜索框搜索学生组</li>
+                </ul>
+            </li>
+            <li>点击"清除测试数据"按钮可以删除所有测试数据（谨慎使用）</li>
+        </ol>
+    </div>
+
+    <script>
+        // 生成测试数据函数
+        document.getElementById('generateTestData').addEventListener('click', function() {
+            // 生成测试学生数据
+            const testStudents = [
+                { id: 'S001', name: '张三', major: '计算机科学与技术', grade: '2020' },
+                { id: 'S002', name: '李四', major: '软件工程', grade: '2020' },
+                { id: 'S003', name: '王五', major: '网络工程', grade: '2020' },
+                { id: 'S004', name: '赵六', major: '人工智能', grade: '2020' },
+                { id: 'S005', name: '钱七', major: '大数据', grade: '2020' },
+                { id: 'S006', name: '孙八', major: '计算机科学与技术', grade: '2020' },
+                { id: 'S007', name: '周九', major: '软件工程', grade: '2020' },
+                { id: 'S008', name: '吴十', major: '网络工程', grade: '2020' }
+            ];
+            
+            // 生成测试教师数据
+            const testTeachers = [
+                { id: 'T001', name: '张教授', title: '教授', major: '计算机科学与技术', phone: '13800138001', email: 'zhang@example.com' },
+                { id: 'T002', name: '李副教授', title: '副教授', major: '软件工程', phone: '13900139001', email: 'li@example.com' }
+            ];
+            
+            // 生成测试学生组数据
+            const testTeams = [
+                {
+                    id: 'TEAM001',
+                    name: '创新小组1',
+                    leaderId: 'S001',
+                    members: ['S001', 'S002', 'S003'],
+                    tags: ['前端开发', '人工智能'],
+                    topic: {
+                        name: '智能推荐系统研究',
+                        description: '开发一个基于用户行为分析的智能推荐系统',
+                        requirements: '掌握机器学习、数据挖掘、Web开发等技术',
+                        relatedKnowledge: 'Python、TensorFlow、React',
+                        submitDate: '2024-01-15'
+                    }
+                },
+                {
+                    id: 'TEAM002',
+                    name: '创新小组2',
+                    leaderId: 'S004',
+                    members: ['S004', 'S005'],
+                    tags: ['后端开发', '大数据'],
+                    topic: {
+                        name: '大数据分析平台设计',
+                        description: '设计和实现一个用于数据分析的平台',
+                        requirements: '掌握大数据处理、分布式系统等技术',
+                        relatedKnowledge: 'Hadoop、Spark、Java',
+                        submitDate: '2024-01-16'
+                    }
+                },
+                {
+                    id: 'TEAM003',
+                    name: '创新小组3',
+                    leaderId: 'S006',
+                    members: ['S006', 'S007', 'S008'],
+                    tags: ['全栈开发', '移动应用'],
+                    topic: {
+                        name: '校园移动应用开发',
+                        description: '开发一个服务于校园生活的移动应用',
+                        requirements: '掌握移动应用开发、云服务等技术',
+                        relatedKnowledge: 'Flutter、Dart、Firebase',
+                        submitDate: '2024-01-17'
+                    }
+                }
+            ];
+            
+            // 保存到localStorage
+            localStorage.setItem('studentsData', JSON.stringify(testStudents));
+            localStorage.setItem('teachersData', JSON.stringify(testTeachers));
+            localStorage.setItem('teamsData', JSON.stringify(testTeams));
+            
+            // 设置模拟的window函数
+            if (typeof window.saveStudentsData !== 'function') {
+                window.saveStudentsData = function(data) { localStorage.setItem('studentsData', JSON.stringify(data)); };
+                window.saveTeachersData = function(data) { localStorage.setItem('teachersData', JSON.stringify(data)); };
+                window.saveTeamsData = function(data) { localStorage.setItem('teamsData', JSON.stringify(data)); };
+                window.loadTeamsData = function() { return JSON.parse(localStorage.getItem('teamsData') || '[]'); };
+                window.getStudentById = function(id) { 
+                    const students = JSON.parse(localStorage.getItem('studentsData') || '[]');
+                    return students.find(s => s.id === id); 
+                };
+                window.getTeacherById = function(id) { 
+                    const teachers = JSON.parse(localStorage.getItem('teachersData') || '[]');
+                    return teachers.find(t => t.id === id); 
+                };
+                window.getTeamById = function(id) { 
+                    const teams = JSON.parse(localStorage.getItem('teamsData') || '[]');
+                    return teams.find(t => t.id === id); 
+                };
+            }
+            
+            // 创建空的教师偏好数据
+            localStorage.setItem('teacherPreferencesData', JSON.stringify([]));
+            if (typeof window.saveTeacherPreferencesData !== 'function') {
+                window.saveTeacherPreferencesData = function(data) { 
+                    localStorage.setItem('teacherPreferencesData', JSON.stringify(data)); 
+                };
+                window.teacherPreferencesData = JSON.parse(localStorage.getItem('teacherPreferencesData') || '[]');
+            }
+            
+            // 更新数据预览
+            updateDataPreview();
+            alert('测试数据生成成功！');
+        });
+        
+        // 检查数据函数
+        document.getElementById('checkData').addEventListener('click', function() {
+            updateDataPreview();
+        });
+        
+        // 清除数据函数
+        document.getElementById('clearData').addEventListener('click', function() {
+            if (confirm('确定要清除所有测试数据吗？此操作不可恢复！')) {
+                localStorage.removeItem('studentsData');
+                localStorage.removeItem('teachersData');
+                localStorage.removeItem('teamsData');
+                localStorage.removeItem('teacherPreferencesData');
+                localStorage.removeItem('user');
+                
+                updateDataPreview();
+                alert('测试数据已清除！');
+            }
+        });
+        
+        // 以教师身份登录
+        document.getElementById('loginAsTeacher').addEventListener('click', function() {
+            // 检查是否有教师数据
+            const teachers = JSON.parse(localStorage.getItem('teachersData') || '[]');
+            if (teachers.length === 0) {
+                alert('请先生成测试数据！');
+                return;
+            }
+            
+            // 设置用户登录状态
+            localStorage.setItem('user', JSON.stringify({
+                id: teachers[0].id,
+                name: teachers[0].name,
+                type: 'teacher'
+            }));
+            
+            // 跳转到teacher.html
+            window.location.href = 'teacher.html';
+        });
+        
+        // 更新数据预览
+        function updateDataPreview() {
+            const students = JSON.parse(localStorage.getItem('studentsData') || '[]');
+            const teachers = JSON.parse(localStorage.getItem('teachersData') || '[]');
+            const teams = JSON.parse(localStorage.getItem('teamsData') || '[]');
+            
+            const preview = {
+                students: students.length,
+                teachers: teachers.length,
+                teams: teams.length,
+                sampleTeams: teams.slice(0, 2)
+            };
+            
+            document.getElementById('dataPreview').textContent = JSON.stringify(preview, null, 2);
+        }
+        
+        // 页面加载时更新数据预览
+        window.onload = function() {
+            updateDataPreview();
+        };
+    </script>
+</body>
+</html>

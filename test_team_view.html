@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试学生组查看功能</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 5px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #2196F3;
+        }
+        .btn-secondary:hover {
+            background-color: #0b7dda;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>测试学生组查看功能</h1>
+    
+    <p>此页面用于测试管理员端学生组查看功能。请先点击"生成测试数据"按钮创建模拟数据，然后登录管理员账户查看效果。</p>
+    
+    <button class="btn" onclick="generateTestTeamData()">生成测试数据</button>
+    <button class="btn btn-secondary" onclick="checkCurrentData()">检查当前数据</button>
+    <button class="btn btn-danger" onclick="clearTestData()">清除测试数据</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        // 生成测试用的学生组数据
+        function generateTestTeamData() {
+            try {
+                // 模拟测试数据
+                const testTeams = [
+                    {
+                        id: 'team001',
+                        name: '人工智能研究小组',
+                        leaderId: '23209010001', // 李一可
+                        members: ['23209010001', '23209010002', '23209010003']
+                    },
+                    {
+                        id: 'team002',
+                        name: '大数据分析团队',
+                        leaderId: '23209010004', // 廖金腾
+                        members: ['23209010004', '23209010005']
+                    },
+                    {
+                        id: 'team003',
+                        name: '前端开发组',
+                        leaderId: '23209010006', // 刘海娣
+                        members: ['23209010006', '23209010007', '23209010008']
+                    }
+                ];
+                
+                // 保存到localStorage
+                localStorage.setItem('teamsData', JSON.stringify(testTeams));
+                
+                document.getElementById('result').innerHTML = 
+                    '<p class="success">测试数据生成成功！</p>' +
+                    '<p>已创建3个测试学生组：</p>' +
+                    '<ul>' +
+                    '<li>人工智能研究小组 (3人)</li>' +
+                    '<li>大数据分析团队 (2人)</li>' +
+                    '<li>前端开发组 (3人)</li>' +
+                    '</ul>' +
+                    '<p>请使用管理员账户登录admin.html查看效果。</p>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<p class="error">生成测试数据失败：' + error.message + '</p>';
+            }
+        }
+        
+        // 检查当前存储的学生组数据
+        function checkCurrentData() {
+            try {
+                const teamsData = localStorage.getItem('teamsData');
+                
+                if (!teamsData) {
+                    document.getElementById('result').innerHTML = 
+                        '<p>当前localStorage中没有学生组数据。</p>';
+                    return;
+                }
+                
+                const teams = JSON.parse(teamsData);
+                
+                if (teams && teams.length > 0) {
+                    let html = '<p class="success">当前存储了' + teams.length + '个学生组：</p><ul>';
+                    
+                    teams.forEach((team, index) => {
+                        html += '<li>' + (team.name || `团队${index + 1}`) + 
+                                ' (' + (team.members ? team.members.length : 0) + '人)</li>';
+                    });
+                    
+                    html += '</ul><p>您可以登录管理员账户查看详细信息。</p>';
+                    document.getElementById('result').innerHTML = html;
+                } else {
+                    document.getElementById('result').innerHTML = 
+                        '<p>没有找到有效的学生组数据。</p>';
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<p class="error">检查数据失败：' + error.message + '</p>';
+            }
+        }
+        
+        // 清除测试数据
+        function clearTestData() {
+            try {
+                localStorage.removeItem('teamsData');
+                document.getElementById('result').innerHTML = 
+                    '<p class="success">学生组测试数据已清除。</p>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<p class="error">清除数据失败：' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

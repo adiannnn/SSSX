@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>检查学生组数据</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .team-card {
+            background-color: white;
+            padding: 15px;
+            margin: 10px 0;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+        .team-header {
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 8px;
+        }
+        .no-teams {
+            color: #666;
+            text-align: center;
+            padding: 40px 0;
+        }
+        .error {
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>检查学生组数据</h1>
+    
+    <p>此页面将帮助您检查系统中是否存在学生组数据。点击下方按钮查看结果：</p>
+    
+    <button class="btn" onclick="checkTeamsData()">检查当前学生组数据</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        function checkTeamsData() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>正在加载数据...</p>';
+            
+            try {
+                // 加载团队数据
+                const teamsData = localStorage.getItem('teamsData');
+                
+                if (!teamsData) {
+                    resultDiv.innerHTML = '<div class="no-teams">当前系统中没有学生组数据</div>';
+                    return;
+                }
+                
+                const teams = JSON.parse(teamsData);
+                
+                if (teams && teams.length > 0) {
+                    resultDiv.innerHTML = `<p>当前系统中有学生组，共 <strong>${teams.length}</strong> 个团队：</p>`;
+                    
+                    teams.forEach((team, index) => {
+                        const teamCard = document.createElement('div');
+                        teamCard.className = 'team-card';
+                        
+                        teamCard.innerHTML = `
+                            <div class="team-header">团队 ${index + 1}: ${team.name || `团队${index + 1}`}</div>
+                            <div><strong>团队ID:</strong> ${team.id}</div>
+                            <div><strong>组长ID:</strong> ${team.leaderId}</div>
+                            <div><strong>成员数量:</strong> ${team.members.length}</div>
+                            <div><strong>成员列表:</strong> ${team.members.join(', ')}</div>
+                        `;
+                        
+                        resultDiv.appendChild(teamCard);
+                    });
+                } else {
+                    resultDiv.innerHTML = '<div class="no-teams">当前系统中没有学生组数据</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">检查团队数据时出错: ${error.message}</div>`;
+                console.error('检查团队数据时出错:', error);
+            }
+        }
+    </script>
+</body>
+</html>

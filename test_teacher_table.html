@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教师页面表格显示测试</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 表格容器样式 */
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+        
+        /* 数据表格样式 */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .data-table th, .data-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+        }
+        
+        .data-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .data-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .data-table td {
+            vertical-align: middle;
+        }
+        
+        /* 按钮样式调整 */
+        .data-table .btn {
+            margin-right: 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        .data-table .btn:last-child {
+            margin-right: 0;
+        }
+        
+        /* 空状态样式 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #666;
+        }
+        
+        /* 搜索容器样式 */
+        .search-container {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            user-select: none;
+        }
+        
+        .btn-primary {
+            color: #fff;
+            background-color: #337ab7;
+            border-color: #2e6da4;
+        }
+        
+        .btn-info {
+            color: #fff;
+            background-color: #5bc0de;
+            border-color: #46b8da;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <h2>教师页面 - 学生组表格显示测试</h2>
+        
+        <!-- 搜索区域 -->
+        <div class="search-container">
+            <input type="text" id="testSearch" placeholder="搜索团队名称、组长或成员..." class="form-control">
+            <button id="testSearchBtn" class="btn btn-primary">搜索</button>
+            <button id="testLoadBtn" class="btn btn-info">加载所有团队</button>
+        </div>
+        
+        <!-- 表格区域 -->
+        <div class="table-container">
+            <table id="testTeamTable" class="data-table">
+                <thead>
+                    <tr>
+                        <th>组ID</th>
+                        <th>组名</th>
+                        <th>组长</th>
+                        <th>成员数量</th>
+                        <th>成员列表</th>
+                        <th>毕业设计题目</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="testTeamTableBody">
+                    <!-- 表格内容将通过JavaScript动态生成 -->
+                </tbody>
+            </table>
+            <div class="empty-state" id="testEmptyState" style="display: none;">
+                <p>暂无学生组数据</p>
+            </div>
+        </div>
+        
+        <!-- 测试信息 -->
+        <div style="margin-top: 30px;">
+            <h3>测试说明：</h3>
+            <p>1. 这个测试页面直接从localStorage读取并显示团队数据</p>
+            <p>2. 点击"加载所有团队"按钮将显示所有学生组数据，无论是否有topic</p>
+            <p>3. 修改已完成，教师页面现在应该能正确显示所有学生组数据</p>
+            <p>4. 点击下方按钮直接访问 <a href="teacher.html">teacher.html</a> 查看实际效果</p>
+            <button onclick="window.location.href='teacher.html'" class="btn btn-primary">前往教师页面</button>
+        </div>
+    </div>
+
+    <script>
+        // 模拟window.loadTeamsData函数
+        function loadTeamsData() {
+            const data = localStorage.getItem('teamsData');
+            if (data) {
+                return JSON.parse(data);
+            }
+            return [];
+        }
+        
+        // 模拟window.getStudentById函数
+        function getStudentById(studentId) {
+            // 简单的模拟实现，实际系统中会有真实的学生数据
+            if (!studentId) return null;
+            return {
+                id: studentId,
+                name: studentId // 在实际系统中应该返回真实的学生姓名
+            };
+        }
+        
+        // 加载所有团队数据
+        function loadAllTeams() {
+            const teams = loadTeamsData();
+            const tableBody = document.getElementById('testTeamTableBody');
+            const emptyState = document.getElementById('testEmptyState');
+            
+            tableBody.innerHTML = '';
+            
+            if (!teams || teams.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            teams.forEach(team => {
+                const row = document.createElement('tr');
+                
+                // 获取组长信息
+                let leaderName = '-';
+                if (team.leaderId) {
+                    const leader = getStudentById(team.leaderId);
+                    leaderName = leader ? `${leader.name} (${leader.id})` : '-';
+                }
+                
+                // 获取成员列表
+                let memberList = '';
+                if (team.members && team.members.length > 0) {
+                    memberList = team.members.map(memberId => {
+                        const member = getStudentById(memberId);
+                        return member ? member.name : memberId;
+                    }).join(', ');
+                }
+                
+                // 获取题目信息（如果存在）
+                const topicName = team.topic && team.topic.name ? team.topic.name : '-';
+                
+                row.innerHTML = `
+                    <td>${team.id || '-'}</td>
+                    <td>${team.name || '-'}</td>
+                    <td>${leaderName}</td>
+                    <td>${team.members ? team.members.length : 0}</td>
+                    <td>${memberList}</td>
+                    <td>${topicName}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info">查看详情</button>
+                        <button class="btn btn-sm btn-primary">选择该组</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 搜索团队
+        function searchTeams(searchText) {
+            const teams = loadTeamsData();
+            const tableBody = document.getElementById('testTeamTableBody');
+            const emptyState = document.getElementById('testEmptyState');
+            
+            tableBody.innerHTML = '';
+            
+            let filteredTeams = teams || [];
+            
+            if (searchText && searchText.trim() !== '') {
+                const searchLower = searchText.toLowerCase().trim();
+                
+                filteredTeams = filteredTeams.filter(team => {
+                    // 搜索团队名称
+                    const matchesTeamName = team.name && team.name.toLowerCase().includes(searchLower);
+                    
+                    // 搜索组长信息
+                    let leader = null;
+                    if (team.leaderId) {
+                        leader = getStudentById(team.leaderId);
+                    }
+                    const matchesLeader = leader && leader.name && leader.name.toLowerCase().includes(searchLower);
+                    
+                    // 搜索成员信息
+                    const matchesMembers = team.members && team.members.some(memberId => {
+                        const member = getStudentById(memberId);
+                        return member && member.name && member.name.toLowerCase().includes(searchLower);
+                    });
+                    
+                    // 搜索题目信息（如果存在）
+                    const matchesTopic = team.topic && 
+                                       (team.topic.name && team.topic.name.toLowerCase().includes(searchLower));
+                    
+                    return matchesTeamName || matchesLeader || matchesMembers || matchesTopic;
+                });
+            }
+            
+            if (filteredTeams.length === 0) {
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            filteredTeams.forEach(team => {
+                // 与loadAllTeams相同的表格行创建逻辑
+                const row = document.createElement('tr');
+                
+                let leaderName = '-';
+                if (team.leaderId) {
+                    const leader = getStudentById(team.leaderId);
+                    leaderName = leader ? `${leader.name} (${leader.id})` : '-';
+                }
+                
+                let memberList = '';
+                if (team.members && team.members.length > 0) {
+                    memberList = team.members.map(memberId => {
+                        const member = getStudentById(memberId);
+                        return member ? member.name : memberId;
+                    }).join(', ');
+                }
+                
+                const topicName = team.topic && team.topic.name ? team.topic.name : '-';
+                
+                row.innerHTML = `
+                    <td>${team.id || '-'}</td>
+                    <td>${team.name || '-'}</td>
+                    <td>${leaderName}</td>
+                    <td>${team.members ? team.members.length : 0}</td>
+                    <td>${memberList}</td>
+                    <td>${topicName}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info">查看详情</button>
+                        <button class="btn btn-sm btn-primary">选择该组</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // 绑定事件
+        document.getElementById('testLoadBtn').addEventListener('click', loadAllTeams);
+        document.getElementById('testSearchBtn').addEventListener('click', () => {
+            const searchText = document.getElementById('testSearch').value;
+            searchTeams(searchText);
+        });
+        document.getElementById('testSearch').addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                const searchText = document.getElementById('testSearch').value;
+                searchTeams(searchText);
+            }
+        });
+        
+        // 页面加载时自动加载所有团队
+        window.onload = function() {
+            loadAllTeams();
+        };
+    </script>
+</body>
+</html>

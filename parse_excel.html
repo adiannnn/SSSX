@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel解析工具</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+    <script>
+        function generatePhoneNumber() {
+            // 生成11位手机号码
+            const prefixes = ['130', '131', '132', '133', '134', '135', '136', '137', '138', '139', 
+                             '150', '151', '152', '153', '155', '156', '157', '158', '159', 
+                             '170', '171', '172', '173', '175', '176', '177', '178', 
+                             '180', '181', '182', '183', '184', '185', '186', '187', '188', '189'];
+            const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+            const suffix = Math.floor(10000000 + Math.random() * 90000000).toString();
+            return prefix + suffix;
+        }
+
+        function parseExcel(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const statusElement = document.getElementById('status');
+                    statusElement.className = 'status success';
+                    statusElement.textContent = '正在解析Excel文件...';
+                    
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    // 显示所有工作表名称
+                    console.log('所有工作表:', workbook.SheetNames);
+                    statusElement.textContent = `找到 ${workbook.SheetNames.length} 个工作表，正在处理第一个...`;
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    
+                    // 尝试不同的解析选项，确保正确处理中文和表头
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1, // 先读取为数组格式以识别表头
+                        defval: '' // 空值处理为''
+                    });
+                    
+                    console.log('原始数组格式数据:', jsonData);
+                    
+                    if (jsonData.length === 0) {
+                        throw new Error('Excel文件中没有数据');
+                    }
+                    
+                    // 提取表头和数据
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1);
+                    
+                    console.log('表头:', headers);
+                    
+                    // 转换为对象数组
+                    const processedData = rows.map(row => {
+                        const obj = {};
+                        headers.forEach((header, index) => {
+                            obj[header] = row[index] || '';
+                        });
+                        return obj;
+                    });
+                    
+                    console.log('处理后的数据:', processedData);
+                    statusElement.textContent = `成功解析 ${processedData.length} 条学生记录`;
+                    
+                    // 处理数据，生成学生数据格式
+                    const students = processedData.map((row, index) => {
+                        // 尝试多种可能的列名映射
+                        const studentId = 
+                            row['学号'] || row['studentId'] || row['ID'] || row['id'] || row['序号'] || row[headers[0]] || `student${index + 1}`;
+                        const name = 
+                            row['姓名'] || row['name'] || row['学生姓名'] || row['Student Name'] || row[headers[1]] || `学生${index + 1}`;
+                        const major = 
+                            row['专业'] || row['major'] || row['学科'] || row['Major'] || row[headers[2]] || '未指定专业';
+                        const grade = 
+                            row['年级'] || row['grade'] || row['Grade'] || row[headers[3]] || '2021';
+                        const className = 
+                            row['班级'] || row['class'] || row['Class'] || row[headers[4]] || '1班';
+                        
+                        // 联系电话只在为空或不存在时生成
+                        const phone = 
+                            (row['电话'] || row['手机'] || row['联系电话'] || row['phone'] || row['Phone'] || '').toString().trim() || generatePhoneNumber();
+                        
+                        return {
+                            id: studentId.toString().trim(),
+                            name: name.toString().trim(),
+                            major: major.toString().trim(),
+                            grade: grade.toString().trim(),
+                            class: className.toString().trim(),
+                            phone: phone
+                        };
+                    });
+                    
+                    // 显示生成的学生数据
+                    const studentsJson = JSON.stringify(students, null, 2);
+                    document.getElementById('result').textContent = studentsJson;
+                    
+                    // 显示可以复制到data.js的代码
+                    const dataJsCode = `// 学生数据（从Excel导入）
+const studentsData = ${studentsJson};`;
+                    document.getElementById('dataJsCode').textContent = dataJsCode;
+                    
+                } catch (error) {
+                    console.error('解析Excel文件时出错:', error);
+                    const statusElement = document.getElementById('status');
+                    statusElement.className = 'status error';
+                    statusElement.textContent = '解析Excel文件时出错: ' + error.message;
+                    document.getElementById('result').textContent = '错误: ' + error.message + '\n\n请检查控制台获取详细错误信息。';
+                }
+            };
+            reader.onerror = function() {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = '读取文件时出错';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.name.endsWith('.xls') || file.name.endsWith('.xlsx')) {
+                    document.getElementById('selectedFile').textContent = '已选择: ' + file.name;
+                    parseExcel(file);
+                } else {
+                    document.getElementById('status').className = 'status error';
+                    document.getElementById('status').textContent = '请选择.xls或.xlsx格式的Excel文件';
+                }
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const textarea = document.createElement('textarea');
+            textarea.value = document.getElementById(elementId).textContent;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            alert('已复制到剪贴板！');
+        }
+    </script>
+</head>
+<body>
+    <h1>Excel学生数据解析工具</h1>
+    <p>请选择 <strong>学生名单.xls</strong> 文件，系统将自动提取所有数据并生成适用于data.js的格式。</p>
+    <p>注意：除联系电话外，所有数据将完全从Excel文件中提取。如果联系电话为空，将自动生成。</p>
+    
+    <input type="file" accept=".xls,.xlsx" id="fileInput" onchange="handleFileSelect(event)" style="display: none;">
+    <button onclick="document.getElementById('fileInput').click()">选择Excel文件</button>
+    <div id="selectedFile" style="margin: 10px 0;"></div>
+    
+    <div id="status" class="status"></div>
+    
+    <h2>原始Excel数据</h2>
+    <pre id="result"></pre>
+    
+    <h2>可直接复制到data.js的代码</h2>
+    <pre id="dataJsCode"></pre>
+    <button onclick="copyToClipboard('dataJsCode')">复制到剪贴板</button>
+    
+    <div style="margin-top: 20px; padding: 15px; background-color: #e9f5fe; border-radius: 5px;">
+        <h3>使用说明</h3>
+        <ol>
+            <li>点击"选择Excel文件"按钮，选择"学生名单.xls"</li>
+            <li>系统将自动解析文件并提取所有学生数据</li>
+            <li>复制生成的代码，替换data.js文件中的studentsData变量</li>
+            <li>如需查看详细解析过程，请打开浏览器控制台</li>
+        </ol>
+    </div>
+</body>
+</html>

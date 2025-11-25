@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加模拟数据</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 0;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-secondary {
+            background-color: #008CBA;
+        }
+        .btn-secondary:hover {
+            background-color: #007B9A;
+        }
+        .btn-danger {
+            background-color: #f44336;
+        }
+        .btn-danger:hover {
+            background-color: #d32f2f;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>添加模拟数据</h1>
+    
+    <p>此页面将帮助您向系统添加模拟学生组数据，以便测试教师端的学生组浏览功能。</p>
+    
+    <button class="btn" onclick="addMockTeamsData()">添加模拟学生组数据</button>
+    <button class="btn btn-secondary" onclick="addMockStudentsData()">添加模拟学生数据</button>
+    <button class="btn btn-danger" onclick="clearAllData()">清空所有数据</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        // 模拟学生数据
+        const mockStudentsData = [
+            { id: '1001', name: '张三', grade: '大四', major: '计算机科学与技术' },
+            { id: '1002', name: '李四', grade: '大四', major: '软件工程' },
+            { id: '1003', name: '王五', grade: '大四', major: '数据科学' },
+            { id: '1004', name: '赵六', grade: '大四', major: '人工智能' },
+            { id: '1005', name: '钱七', grade: '大四', major: '计算机科学与技术' },
+            { id: '1006', name: '孙八', grade: '大四', major: '软件工程' },
+            { id: '1007', name: '周九', grade: '大四', major: '数据科学' },
+            { id: '1008', name: '吴十', grade: '大四', major: '人工智能' }
+        ];
+        
+        // 模拟学生组数据
+        const mockTeamsData = [
+            {
+                id: 'team1',
+                name: '智能系统开发组',
+                leaderId: '1001',
+                members: ['张三', '李四', '王五'],
+                topic: {
+                    id: 'topic1',
+                    name: '基于深度学习的智能推荐系统'
+                }
+            },
+            {
+                id: 'team2',
+                name: '数据可视化团队',
+                leaderId: '1004',
+                members: ['赵六', '钱七'],
+                topic: {
+                    id: 'topic2',
+                    name: '大数据可视化平台的设计与实现'
+                }
+            },
+            {
+                id: 'team3',
+                name: '移动应用开发组',
+                leaderId: '1007',
+                members: ['周九', '吴十'],
+                topic: null
+            },
+            {
+                id: 'team4',
+                name: 'Web前端开发组',
+                leaderId: '1002',
+                members: ['李四', '王五', '孙八'],
+                topic: {
+                    id: 'topic3',
+                    name: '响应式Web应用的设计与实现'
+                }
+            }
+        ];
+        
+        // 添加模拟学生组数据
+        function addMockTeamsData() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // 保存到localStorage
+                localStorage.setItem('teamsData', JSON.stringify(mockTeamsData));
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✓ 模拟学生组数据添加成功！</div>
+                    <p>已添加 ${mockTeamsData.length} 个学生组：</p>
+                    <pre>${JSON.stringify(mockTeamsData, null, 2)}</pre>
+                `;
+                
+                console.log('模拟学生组数据已添加到localStorage:', mockTeamsData);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ 添加数据失败: ${error.message}</div>`;
+                console.error('添加模拟学生组数据时出错:', error);
+            }
+        }
+        
+        // 添加模拟学生数据
+        function addMockStudentsData() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                // 保存到localStorage
+                localStorage.setItem('mockStudentsInfo', JSON.stringify(mockStudentsData));
+                
+                // 同时设置到window对象
+                window.mockStudentsInfo = mockStudentsData;
+                
+                resultDiv.innerHTML = `
+                    <div class="success">✓ 模拟学生数据添加成功！</div>
+                    <p>已添加 ${mockStudentsData.length} 个学生：</p>
+                    <pre>${JSON.stringify(mockStudentsData, null, 2)}</pre>
+                `;
+                
+                console.log('模拟学生数据已添加到localStorage:', mockStudentsData);
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ 添加数据失败: ${error.message}</div>`;
+                console.error('添加模拟学生数据时出错:', error);
+            }
+        }
+        
+        // 清空所有数据
+        function clearAllData() {
+            if (confirm('确定要清空所有数据吗？此操作不可撤销！')) {
+                const resultDiv = document.getElementById('result');
+                
+                try {
+                    localStorage.removeItem('teamsData');
+                    localStorage.removeItem('mockStudentsInfo');
+                    window.mockStudentsInfo = null;
+                    
+                    resultDiv.innerHTML = `<div class="success">✓ 所有数据已清空！</div>`;
+                    console.log('所有数据已清空');
+                } catch (error) {
+                    resultDiv.innerHTML = `<div class="error">✗ 清空数据失败: ${error.message}</div>`;
+                    console.error('清空数据时出错:', error);
+                }
+            }
+        }
+        
+        // 检查当前数据
+        function checkCurrentData() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const teamsData = localStorage.getItem('teamsData');
+                const studentsData = localStorage.getItem('mockStudentsInfo');
+                
+                let html = '<h3>当前系统数据状态：</h3>';
+                
+                if (teamsData) {
+                    const teams = JSON.parse(teamsData);
+                    html += `<div class="success">✓ 存在学生组数据 (${teams.length} 个)</div>`;
+                } else {
+                    html += '<div class="error">✗ 不存在学生组数据</div>';
+                }
+                
+                if (studentsData) {
+                    const students = JSON.parse(studentsData);
+                    html += `<div class="success">✓ 存在学生数据 (${students.length} 个)</div>`;
+                } else {
+                    html += '<div class="error">✗ 不存在学生数据</div>';
+                }
+                
+                resultDiv.innerHTML = html;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">✗ 检查数据时出错: ${error.message}</div>`;
+                console.error('检查数据时出错:', error);
+            }
+        }
+        
+        // 页面加载时检查当前数据状态
+        checkCurrentData();
+    </script>
+</body>
+</html>

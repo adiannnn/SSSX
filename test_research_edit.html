@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>研究方向编辑功能测试指南</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+        }
+        .step {
+            background-color: #f9f9f9;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 10px 0;
+        }
+        .expected {
+            background-color: #e8f4fc;
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .note {
+            background-color: #fff8e1;
+            padding: 10px 15px;
+            border-radius: 4px;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <h1>研究方向编辑功能测试指南</h1>
+    
+    <div class="note">
+        <p><strong>注意：</strong>在测试前，请确保您已登录为教师账号，并且已经提交过研究方向。</p>
+    </div>
+    
+    <h2>测试步骤</h2>
+    
+    <div class="step">
+        <h3>步骤 1: 访问教师页面</h3>
+        <p>1. 打开浏览器，进入teacher.html页面</p>
+        <p>2. 确认已成功登录为教师账号</p>
+        
+        <div class="expected">
+            <p><strong>预期结果：</strong></p>
+            <p>- 页面加载成功，显示教师个人信息</p>
+            <p>- 研究方向模块显示您之前提交的研究方向</p>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 2: 点击编辑按钮</h3>
+        <p>1. 在研究方向显示区域找到并点击"编辑研究方向"按钮</p>
+        
+        <div class="expected">
+            <p><strong>预期结果：</strong></p>
+            <p>- 原有的研究方向信息显示区域消失</p>
+            <p>- 编辑表单出现，并且输入框中显示您之前提交的研究方向</p>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 3: 修改研究方向内容</h3>
+        <p>1. 在编辑表单的输入框中修改研究方向的内容</p>
+        <p>2. 点击"保存修改"按钮</p>
+        
+        <div class="expected">
+            <p><strong>预期结果：</strong></p>
+            <p>- 弹出"研究方向更新成功！"的提示框</p>
+            <p>- 编辑表单消失，显示更新后的研究方向信息</p>
+            <p>- 显示的研究方向内容已更新</p>
+            <p>- 提交时间已更新为当前日期</p>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 4: 测试空值验证</h3>
+        <p>1. 点击"编辑研究方向"按钮</p>
+        <p>2. 清空输入框内容</p>
+        <p>3. 点击"保存修改"按钮</p>
+        
+        <div class="expected">
+            <p><strong>预期结果：</strong></p>
+            <p>- 弹出"请输入研究方向"的提示框</p>
+            <p>- 编辑表单保持显示，没有保存空内容</p>
+        </div>
+    </div>
+    
+    <div class="step">
+        <h3>步骤 5: 测试取消编辑</h3>
+        <p>1. 点击"编辑研究方向"按钮</p>
+        <p>2. 修改输入框内容</p>
+        <p>3. 点击"取消"按钮</p>
+        
+        <div class="expected">
+            <p><strong>预期结果：</strong></p>
+            <p>- 编辑表单消失，返回到研究方向显示界面</p>
+            <p>- 显示的研究方向内容保持不变（未应用修改）</p>
+        </div>
+    </div>
+    
+    <h2>功能总结</h2>
+    <p>成功实现的研究方向编辑功能包括：</p>
+    <ul>
+        <li>在已提交研究方向的显示界面添加"编辑研究方向"按钮</li>
+        <li>点击编辑按钮后进入编辑模式，预设当前研究方向内容</li>
+        <li>支持保存修改后的研究方向，并更新提交时间</li>
+        <li>提供取消编辑功能，不保存任何修改</li>
+        <li>添加空值验证，确保必须输入研究方向</li>
+    </ul>
+</body>
+</html>
