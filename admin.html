@@ -52,41 +52,60 @@
         .navbar {
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             color: white;
-            padding: 20px;
+            padding: 20px 15px;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            position: sticky;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+            position: fixed;
             top: 0;
+            left: 0;
+            bottom: 0;
+            width: 250px;
             z-index: 1000;
+            transition: all 0.3s ease;
+            overflow-y: auto;
         }
         
         .navbar-brand {
-            margin: 0;
-            font-size: 1.8rem;
+            margin: 0 0 30px 0;
+            font-size: 1.3rem;
             font-weight: 700;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
         }
         
         .nav-menu {
             display: flex;
-            gap: 10px;
+            flex-direction: column;
+            gap: 12px;
+            margin: 0 0 30px 0;
+            width: 100%;
+            padding: 0;
         }
         
         .nav-link {
             position: relative;
             transition: all 0.3s ease;
-            padding: 10px 15px;
+            padding: 12px 20px;
             color: white;
             text-decoration: none;
             border-radius: 8px;
             font-weight: 500;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: block;
+            text-align: center;
+            width: 100%;
         }
         
         .nav-link:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         
         .nav-link.active {
@@ -381,6 +400,120 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .pagination-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .pagination-info {
+                text-align: center;
+                margin-bottom: 10px;
+            }
+        }
+        
+        /* 分页控件样式 */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .pagination-info {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .page-size-select {
+            width: auto;
+            min-width: 120px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-btn {
+            min-width: 80px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #4f46e5;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-btn:hover:not(:disabled) {
+            background: #4f46e5;
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .page-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .page-button {
+            min-width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .page-button:hover {
+            color: #4f46e5;
+            border-color: #4f46e5;
+            transform: translateY(-1px);
+        }
+        
+        .page-button.active {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        
+        .page-button.dots {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: default;
+        }
+        
+        .page-button.dots:hover {
+            transform: none;
+            color: #94a3b8;
+            border-color: #e2e8f0;
         }
         
         /* 主内容区域 */
@@ -541,12 +674,31 @@
                     <tbody id="studentTableBody">
                         <!-- 学生信息表格内容将通过JavaScript动态生成 -->
                         <tr class="loading-row">
-                            <td colspan="6" class="text-center">
+                            <td colspan="7" class="text-center">
                                 <div class="loading">加载中</div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
+                <!-- 分页控件 -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        显示 <span id="startItem">0</span>-<span id="endItem">0</span> 条，共 <span id="totalItems">0</span> 条
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="pageSizeSelect" class="form-control page-size-select">
+                            <option value="10">10条/页</option>
+                            <option value="20">20条/页</option>
+                            <option value="50">50条/页</option>
+                            <option value="100">100条/页</option>
+                        </select>
+                        <button id="prevPage" class="btn btn-sm pagination-btn">上一页</button>
+                        <div id="pageButtons" class="page-buttons">
+                            <!-- 页码按钮将通过JavaScript动态生成 -->
+                        </div>
+                        <button id="nextPage" class="btn btn-sm pagination-btn">下一页</button>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -592,6 +744,25 @@
                         </tr>
                     </tbody>
                 </table>
+                <!-- 分页控件 -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        显示 <span id="teamStartItem">0</span>-<span id="teamEndItem">0</span> 条，共 <span id="teamTotalItems">0</span> 条
+                    </div>
+                    <div class="pagination-controls">
+                        <select id="teamPageSizeSelect" class="form-control page-size-select">
+                            <option value="10">10条/页</option>
+                            <option value="20">20条/页</option>
+                            <option value="50">50条/页</option>
+                            <option value="100">100条/页</option>
+                        </select>
+                        <button id="teamPrevPage" class="btn btn-sm pagination-btn">上一页</button>
+                        <div id="teamPageButtons" class="page-buttons">
+                            <!-- 页码按钮将通过JavaScript动态生成 -->
+                        </div>
+                        <button id="teamNextPage" class="btn btn-sm pagination-btn">下一页</button>
+                    </div>
+                </div>
             </div>
             <div id="emptyTeamState" style="display: none; text-align: center; padding: 40px 0; color: #666;">
                 <div class="empty-state-icon">👥</div>
@@ -637,6 +808,25 @@
                     </tbody>
                 </table>
             </div>
+            
+            <!-- 分页控件 -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    <span id="teacherTotalCount">0</span> 条记录，共 <span id="teacherTotalPages">0</span> 页，每页显示
+                    <select id="teacherPageSize" class="page-size-select">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    条
+                </div>
+                <div class="pagination-controls" id="teacherPaginationControls">
+                    <button class="btn btn-sm btn-pagination" id="teacherPrevPage">上一页</button>
+                    <div id="teacherPageButtons"></div>
+                    <button class="btn btn-sm btn-pagination" id="teacherNextPage">下一页</button>
+                </div>
+            </div>
         </section>
 
         <!-- 系统设置模块 -->
@@ -662,6 +852,15 @@
                 <div class="form-group">
                     <label for="minStudentsPerTeam">每组最少学生数：</label>
                     <input type="number" id="minStudentsPerTeam" class="form-control" min="1" value="1">
+                </div>
+                <div class="form-group">
+                    <label for="assignedMajor">分配学生组的专业：</label>
+                    <select id="assignedMajor" class="form-control">
+                        <option value="">全部专业</option>
+                        <option value="信息管理与信息系统">信息管理与信息系统</option>
+                        <option value="计算机科学与技术">计算机科学与技术</option>
+                        <option value="软件工程">软件工程</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="studentTeamPrefDeadline">学生组提交志愿截止时间：</label>
@@ -717,6 +916,25 @@
                 <div id="emptyStudentPrefState" class="empty-state" style="display: none;">
                     <p>暂无学生组志愿数据</p>
                 </div>
+                <div class="pagination-info">
+                    <span>共 <span id="studentPrefTotalCount">0</span> 条记录</span>
+                    <span>第 <span id="studentPrefCurrentPage">1</span> / <span id="studentPrefTotalPages">1</span> 页</span>
+                    <div class="page-size-selector">
+                        每页显示
+                        <select id="studentPrefPageSize">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        条
+                    </div>
+                </div>
+                <div class="pagination-controls" id="studentPrefPaginationControls">
+                    <button class="btn btn-sm btn-pagination" id="studentPrefPrevPage">上一页</button>
+                    <div id="studentPrefPageButtons"></div>
+                    <button class="btn btn-sm btn-pagination" id="studentPrefNextPage">下一页</button>
+                </div>
             </div>
         </section>
 
@@ -753,6 +971,25 @@
                 <div id="emptyTeacherPrefState" class="empty-state" style="display: none;">
                     <p>暂无老师选择数据</p>
                 </div>
+                <div class="pagination-info">
+                    <span>共 <span id="teacherPrefTotalCount">0</span> 条记录</span>
+                    <span>第 <span id="teacherPrefCurrentPage">1</span> / <span id="teacherPrefTotalPages">1</span> 页</span>
+                    <div class="page-size-selector">
+                        每页显示
+                        <select id="teacherPrefPageSize">
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        条
+                    </div>
+                </div>
+                <div class="pagination-controls" id="teacherPrefPaginationControls">
+                    <button class="btn btn-sm btn-pagination" id="teacherPrefPrevPage">上一页</button>
+                    <div id="teacherPrefPageButtons"></div>
+                    <button class="btn btn-sm btn-pagination" id="teacherPrefNextPage">下一页</button>
+                </div>
             </div>
         </section>
 
@@ -782,6 +1019,28 @@
             <div id="emptyResultState" style="display: none; text-align: center; padding: 40px; color: #666;">
                 <div class="empty-state-icon">📊</div>
                 <p>暂无匹配结果，请先运行匹配算法</p>
+            </div>
+            
+            <!-- 分页信息 -->
+            <div class="pagination-info" style="margin-top: 10px; text-align: center;">
+                <span id="matchResultPaginationInfo">共 0 条记录，第 0/0 页</span>
+                <div class="page-size-selector" style="display: inline-block; margin-left: 20px;">
+                    每页显示
+                    <select id="matchResultPageSizeSelect">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    条
+                </div>
+            </div>
+            
+            <!-- 分页控件 -->
+            <div class="pagination-controls" id="matchResultPaginationControls" style="display: flex; justify-content: center; margin-top: 15px;">
+                <button class="btn btn-sm btn-pagination" id="matchResultPrevPage">上一页</button>
+                <div id="matchResultPageButtons" style="margin: 0 10px;"></div>
+                <button class="btn btn-sm btn-pagination" id="matchResultNextPage">下一页</button>
             </div>
         </section>
     </main>

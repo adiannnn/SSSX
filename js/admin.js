@@ -1,5 +1,48 @@
 // 管理员端功能实现
 
+// 分页相关全局变量
+// 学生列表分页变量
+let currentPage = 1;      // 当前页码
+let pageSize = 10;        // 每页显示条数
+let totalPages = 1;       // 总页数
+let totalItems = 0;       // 总记录数
+let filteredStudents = []; // 过滤后的学生数据
+
+// 学生组分页变量
+let teamCurrentPage = 1;      // 当前页码
+let teamPageSize = 10;        // 每页显示条数
+let teamTotalPages = 1;       // 总页数
+let teamTotalItems = 0;       // 总记录数
+let filteredTeams = [];       // 过滤后的团队数据
+
+// 导师分页变量
+let teacherCurrentPage = 1;   // 当前页码
+let teacherPageSize = 10;     // 每页显示条数
+let teacherTotalPages = 1;    // 总页数
+let teacherTotalItems = 0;    // 总记录数
+let filteredTeachers = [];    // 过滤后的导师数据
+
+// 学生组志愿分页变量
+let studentPrefCurrentPage = 1;   // 当前页码
+let studentPrefPageSize = 10;     // 每页显示条数
+let studentPrefTotalPages = 1;    // 总页数
+let studentPrefTotalItems = 0;    // 总记录数
+let filteredStudentPrefData = []; // 过滤后的学生组志愿数据
+
+// 老师选择分页变量
+let teacherPrefCurrentPage = 1;   // 当前页码
+let teacherPrefPageSize = 10;     // 每页显示条数
+let teacherPrefTotalPages = 1;    // 总页数
+let teacherPrefTotalItems = 0;    // 总记录数
+let filteredTeacherPrefData = []; // 过滤后的老师选择数据
+
+// 匹配结果分页变量
+let matchResultCurrentPage = 1;   // 当前页码
+let matchResultPageSize = 10;     // 每页显示条数
+let matchResultTotalPages = 1;    // 总页数
+let matchResultTotalItems = 0;    // 总记录数
+let filteredMatchResultData = []; // 过滤后的匹配结果数据
+
 // 加载系统统计仪表盘数据
 function loadDashboardStats() {
     try {
@@ -130,6 +173,9 @@ window.onload = function() {
     // 绑定事件
     bindEvents();
     
+    // 绑定匹配结果分页相关事件
+    bindMatchResultPaginationEvents();
+    
     // 定期更新仪表盘数据（每30秒）
     setInterval(loadDashboardStats, 30000);
 };
@@ -189,6 +235,7 @@ function checkLoginStatus() {
 
 // 加载学生列表
 function loadStudentList() {
+    // 获取students数据
     const students = window.studentsData;
     const studentTableBody = document.getElementById('studentTableBody');
     
@@ -199,39 +246,164 @@ function loadStudentList() {
     const gradeFilter = document.getElementById('studentGradeFilter').value;
     const majorFilter = document.getElementById('studentMajorFilter').value;
     
-    const filteredStudents = students.filter(student => {
-        const idMatch = student.id.toLowerCase().includes(searchText);
-        const nameMatch = student.name.toLowerCase().includes(searchText);
+    // 过滤学生数据
+    filteredStudents = Array.isArray(students) ? students : Object.values(students);
+    filteredStudents = filteredStudents.filter(student => {
+        if (!student) return false;
+        const idMatch = student.id?.toLowerCase().includes(searchText) || false;
+        const nameMatch = student.name?.toLowerCase().includes(searchText) || false;
         const gradeMatch = !gradeFilter || student.grade === gradeFilter;
         const majorMatch = !majorFilter || student.major === majorFilter;
         
         return (idMatch || nameMatch) && gradeMatch && majorMatch;
     });
     
-    filteredStudents.forEach(student => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${student.id}</td>
-            <td>${student.name}</td>
-            <td>${student.grade}</td>
-            <td>${student.major}</td>
-            <td>${student.class}</td>
-            <td>${student.phone || '-'}</td>
-            <td>
-                <button class="btn btn-sm btn-edit" onclick="editStudent('${student.id}')">编辑</button>
-                <button class="btn btn-sm btn-delete" onclick="deleteStudent('${student.id}')">删除</button>
+    // 计算总页数和总记录数
+    totalItems = filteredStudents.length;
+    totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    
+    // 重置当前页码（如果当前页码超过总页数）
+    if (currentPage > totalPages) {
+        currentPage = Math.max(1, totalPages);
+    }
+    
+    // 计算当前页的数据范围
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = Math.min(startIndex + pageSize, totalItems);
+    const currentPageStudents = filteredStudents.slice(startIndex, endIndex);
+    
+    // 渲染当前页数据
+    if (currentPageStudents.length > 0) {
+        currentPageStudents.forEach(student => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${student.id}</td>
+                <td>${student.name}</td>
+                <td>${student.grade}</td>
+                <td>${student.major}</td>
+                <td>${student.class}</td>
+                <td>${student.phone || '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-edit" onclick="editStudent('${student.id}')">编辑</button>
+                    <button class="btn btn-sm btn-delete" onclick="deleteStudent('${student.id}')">删除</button>
+                </td>
+            `;
+            studentTableBody.appendChild(row);
+        });
+    } else {
+        // 显示空状态
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `
+            <td colspan="7" class="text-center">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <h4>暂无学生数据</h4>
+                    <p>没有符合条件的学生记录</p>
+                </div>
             </td>
         `;
-        studentTableBody.appendChild(row);
-    });
+        studentTableBody.appendChild(emptyRow);
+    }
+    
+    // 更新分页信息和控件
+    updatePaginationInfo(startIndex + 1, endIndex, totalItems);
+    renderPaginationControls();
     
     // 更新专业下拉列表
     updateMajorFilterOptions();
 }
 
+// 更新导师分页信息显示
+function updateTeacherPaginationInfo() {
+    document.getElementById('teacherTotalCount').textContent = teacherTotalItems;
+    document.getElementById('teacherTotalPages').textContent = teacherTotalPages;
+    document.getElementById('teacherPageSize').value = teacherPageSize;
+}
+
+// 创建导师页码按钮
+function addTeacherPageButton(container, pageNum, isActive) {
+    const button = document.createElement('button');
+    button.className = `btn btn-sm ${isActive ? 'btn-primary' : 'btn-default'}`;
+    button.textContent = pageNum;
+    button.onclick = () => {
+        teacherCurrentPage = pageNum;
+        loadTeacherList();
+    };
+    container.appendChild(button);
+}
+
+// 创建导师省略号按钮
+function addTeacherEllipsisButton(container) {
+    const span = document.createElement('span');
+    span.className = 'pagination-ellipsis';
+    span.textContent = '...';
+    container.appendChild(span);
+}
+
+// 渲染导师分页控件
+function renderTeacherPaginationControls() {
+    const controlsContainer = document.getElementById('teacherPaginationControls');
+    const pageButtonsContainer = document.getElementById('teacherPageButtons');
+    
+    // 清空现有按钮
+    pageButtonsContainer.innerHTML = '';
+    
+    // 设置上一页按钮状态
+    const prevPageButton = document.getElementById('teacherPrevPage');
+    prevPageButton.disabled = teacherCurrentPage === 1;
+    prevPageButton.onclick = () => {
+        if (teacherCurrentPage > 1) {
+            teacherCurrentPage--;
+            loadTeacherList();
+        }
+    };
+    
+    // 设置下一页按钮状态
+    const nextPageButton = document.getElementById('teacherNextPage');
+    nextPageButton.disabled = teacherCurrentPage === teacherTotalPages || teacherTotalPages === 0;
+    nextPageButton.onclick = () => {
+        if (teacherCurrentPage < teacherTotalPages) {
+            teacherCurrentPage++;
+            loadTeacherList();
+        }
+    };
+    
+    // 生成页码按钮
+    if (teacherTotalPages <= 5) {
+        // 如果页数较少，显示所有页码
+        for (let i = 1; i <= teacherTotalPages; i++) {
+            addTeacherPageButton(pageButtonsContainer, i, i === teacherCurrentPage);
+        }
+    } else {
+        // 显示第一页
+        addTeacherPageButton(pageButtonsContainer, 1, 1 === teacherCurrentPage);
+        
+        // 如果当前页不是前两页，添加省略号
+        if (teacherCurrentPage > 2) {
+            addTeacherEllipsisButton(pageButtonsContainer);
+        }
+        
+        // 显示当前页及其前后各一页
+        let startPage = Math.max(2, teacherCurrentPage - 1);
+        let endPage = Math.min(teacherTotalPages - 1, teacherCurrentPage + 1);
+        
+        for (let i = startPage; i <= endPage; i++) {
+            addTeacherPageButton(pageButtonsContainer, i, i === teacherCurrentPage);
+        }
+        
+        // 如果当前页不是最后两页，添加省略号
+        if (teacherCurrentPage < teacherTotalPages - 1) {
+            addTeacherEllipsisButton(pageButtonsContainer);
+        }
+        
+        // 显示最后一页
+        addTeacherPageButton(pageButtonsContainer, teacherTotalPages, teacherTotalPages === teacherCurrentPage);
+    }
+}
+
 // 加载导师列表
 function loadTeacherList() {
-    const teachers = window.teachersData;
+    const teachers = window.teachersData || [];
     const teacherTableBody = document.getElementById('teacherTableBody');
     
     teacherTableBody.innerHTML = '';
@@ -240,7 +412,8 @@ function loadTeacherList() {
     const searchText = document.getElementById('teacherSearch').value.toLowerCase();
     const majorFilter = document.getElementById('teacherMajorFilter').value;
     
-    const filteredTeachers = teachers.filter(teacher => {
+    // 保存筛选结果到全局变量
+    filteredTeachers = teachers.filter(teacher => {
         const idMatch = teacher.id.toLowerCase().includes(searchText);
         const nameMatch = teacher.name.toLowerCase().includes(searchText);
         const majorMatch = !majorFilter || teacher.major === majorFilter;
@@ -248,22 +421,53 @@ function loadTeacherList() {
         return (idMatch || nameMatch) && majorMatch;
     });
     
-    filteredTeachers.forEach(teacher => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${teacher.id}</td>
-            <td>${teacher.name}</td>
-            <td>${teacher.title}</td>
-            <td>${teacher.major}</td>
-            <td>${teacher.phone || '-'}</td>
-            <td>${teacher.email || '-'}</td>
-            <td>
-                <button class="btn btn-sm btn-edit" onclick="editTeacher('${teacher.id}')">编辑</button>
-                <button class="btn btn-sm btn-delete" onclick="deleteTeacher('${teacher.id}')">删除</button>
+    // 更新总数和总页数
+    teacherTotalItems = filteredTeachers.length;
+    teacherTotalPages = Math.ceil(teacherTotalItems / teacherPageSize);
+    
+    // 确保当前页码有效
+    if (teacherCurrentPage > teacherTotalPages && teacherTotalPages > 0) {
+        teacherCurrentPage = teacherTotalPages;
+    }
+    
+    // 计算当前页数据范围
+    const startIndex = (teacherCurrentPage - 1) * teacherPageSize;
+    const endIndex = startIndex + teacherPageSize;
+    const currentPageTeachers = filteredTeachers.slice(startIndex, endIndex);
+    
+    // 渲染当前页数据
+    if (currentPageTeachers.length > 0) {
+        currentPageTeachers.forEach(teacher => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${teacher.id}</td>
+                <td>${teacher.name}</td>
+                <td>${teacher.title}</td>
+                <td>${teacher.major}</td>
+                <td>${teacher.phone || '-'}</td>
+                <td>${teacher.email || '-'}</td>
+                <td>
+                    <button class="btn btn-sm btn-edit" onclick="editTeacher('${teacher.id}')">编辑</button>
+                    <button class="btn btn-sm btn-delete" onclick="deleteTeacher('${teacher.id}')">删除</button>
+                </td>
+            `;
+            teacherTableBody.appendChild(row);
+        });
+    } else {
+        // 显示空状态
+        const emptyRow = document.createElement('tr');
+        emptyRow.className = 'empty-row';
+        emptyRow.innerHTML = `
+            <td colspan="7" class="text-center">
+                暂无符合条件的导师数据
             </td>
         `;
-        teacherTableBody.appendChild(row);
-    });
+        teacherTableBody.appendChild(emptyRow);
+    }
+    
+    // 更新分页信息和控件
+    updateTeacherPaginationInfo();
+    renderTeacherPaginationControls();
     
     // 更新专业下拉列表
     updateTeacherMajorFilterOptions();
@@ -289,7 +493,12 @@ function loadSystemSettings() {
             document.getElementById('maxStudentsPerTeacher').value = systemSettings.maxStudentsPerTeacher;
         }
         if (systemSettings.minStudentsPerGroup) {
-            document.getElementById('minStudentsPerGroup').value = systemSettings.minStudentsPerGroup;
+            document.getElementById('minStudentsPerTeam').value = systemSettings.minStudentsPerGroup;
+        }
+        
+        // 设置分配专业
+        if (systemSettings.assignedMajor) {
+            document.getElementById('assignedMajor').value = systemSettings.assignedMajor;
         }
         
         // 设置截止时间
@@ -413,9 +622,11 @@ function loadStudentPreferences() {
     console.log('学生组志愿数据数量:', preferencesData.length);
     console.log('团队数据数量:', teamsData.length);
     
+    // 应用筛选条件并存储到全局变量
+    filteredStudentPrefData = [];
     if (preferencesData.length > 0) {
         // 应用筛选条件
-        const filteredPreferences = preferencesData.filter(pref => {
+        filteredStudentPrefData = preferencesData.filter(pref => {
             const team = teamsData.find(t => t.id === pref.teamId) || { id: pref.teamId, name: '未知团队', members: [] };
             const teamInfo = getTeamMajorAndGrade(team.members);
             
@@ -430,52 +641,65 @@ function loadStudentPreferences() {
             
             return searchMatch && gradeMatch && majorMatch;
         });
+    }
+    
+    // 更新总数和总页数
+    studentPrefTotalItems = filteredStudentPrefData.length;
+    studentPrefTotalPages = Math.max(1, Math.ceil(studentPrefTotalItems / studentPrefPageSize));
+    
+    // 确保当前页码有效
+    if (studentPrefCurrentPage > studentPrefTotalPages) {
+        studentPrefCurrentPage = studentPrefTotalPages;
+    }
+    
+    // 计算当前页数据范围
+    const startIndex = (studentPrefCurrentPage - 1) * studentPrefPageSize;
+    const endIndex = startIndex + studentPrefPageSize;
+    const currentPageData = filteredStudentPrefData.slice(startIndex, endIndex);
+    
+    // 更新分页信息显示
+    updateStudentPrefPaginationInfo();
+    
+    // 显示表格，隐藏空状态
+    if (currentPageData.length > 0) {
+        tableBody.parentElement.style.display = 'table';
+        emptyState.style.display = 'none';
         
-        // 显示表格，隐藏空状态
-        if (filteredPreferences.length > 0) {
-            tableBody.parentElement.style.display = 'table';
-            emptyState.style.display = 'none';
+        currentPageData.forEach(pref => {
+            const team = teamsData.find(t => t.id === pref.teamId) || { id: pref.teamId, name: '未知团队', members: [], direction: '' };
+            const row = document.createElement('tr');
             
-            filteredPreferences.forEach(pref => {
-                const team = teamsData.find(t => t.id === pref.teamId) || { id: pref.teamId, name: '未知团队', members: [], direction: '' };
-                const row = document.createElement('tr');
-                
-                // 获取团队成员信息
-                const members = team.members || [];
-                const memberNames = members.map(m => {
-                    const student = getStudentInfo(m);
-                    return student.name;
-                }).join(', ');
-                
-                // 获取组长信息
-                const leaderName = members.length > 0 ? getStudentInfo(members[0]).name : '-';
-                
-                // 获取志愿信息
-                const preferences = pref.preferences || [];
-                const firstPrefName = preferences[0] ? getTeacherInfo(preferences[0]).name : '-';
-                const secondPrefName = preferences[1] ? getTeacherInfo(preferences[1]).name : '-';
-                const thirdPrefName = preferences[2] ? getTeacherInfo(preferences[2]).name : '-';
-                
-                row.innerHTML = `
-                    <td>${team.id}</td>
-                    <td>${team.name}</td>
-                    <td>${leaderName}</td>
-                    <td>${memberNames || '-'}</td>
-                    <td>${team.direction || '-'}</td>
-                    <td>${firstPrefName}</td>
-                    <td>${secondPrefName}</td>
-                    <td>${thirdPrefName}</td>
-                    <td>${pref.submitDate || '-'}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        } else {
-            // 没有匹配的结果
-            tableBody.parentElement.style.display = 'none';
-            emptyState.style.display = 'block';
-        }
+            // 获取团队成员信息
+            const members = team.members || [];
+            const memberNames = members.map(m => {
+                const student = getStudentInfo(m);
+                return student.name;
+            }).join(', ');
+            
+            // 获取组长信息
+            const leaderName = members.length > 0 ? getStudentInfo(members[0]).name : '-';
+            
+            // 获取志愿信息
+            const preferences = pref.preferences || [];
+            const firstPrefName = preferences[0] ? getTeacherInfo(preferences[0]).name : '-';
+            const secondPrefName = preferences[1] ? getTeacherInfo(preferences[1]).name : '-';
+            const thirdPrefName = preferences[2] ? getTeacherInfo(preferences[2]).name : '-';
+            
+            row.innerHTML = `
+                <td>${team.id}</td>
+                <td>${team.name}</td>
+                <td>${leaderName}</td>
+                <td>${memberNames || '-'}</td>
+                <td>${team.direction || '-'}</td>
+                <td>${firstPrefName}</td>
+                <td>${secondPrefName}</td>
+                <td>${thirdPrefName}</td>
+                <td>${pref.submitDate || '-'}</td>
+            `;
+            tableBody.appendChild(row);
+        });
     } else {
-        // 隐藏表格，显示空状态
+        // 没有匹配的结果
         tableBody.parentElement.style.display = 'none';
         emptyState.style.display = 'block';
     }
@@ -483,6 +707,9 @@ function loadStudentPreferences() {
     // 更新年级和专业下拉列表
     updateStudentPrefGradeFilterOptions();
     updateStudentPrefMajorFilterOptions();
+    
+    // 渲染分页控件
+    renderStudentPrefPaginationControls();
     
     // 绑定搜索事件（避免重复绑定）
     if (document.getElementById('studentPrefSearch')) {
@@ -508,6 +735,8 @@ function loadStudentPreferences() {
 
 // 筛选学生组志愿
 function filterStudentPreferences() {
+    // 重置页码到第一页
+    studentPrefCurrentPage = 1;
     loadStudentPreferences();
 }
 
@@ -530,16 +759,58 @@ function loadTeacherPreferences() {
         return teamsData.find(t => t.id === teamId) || { name: teamId };
     }
     
-    // 即使有数据，也要确保能正确显示
-    console.log('老师选择数据数量:', preferencesData.length);
-    console.log('老师数据数量:', teachersData.length);
+    // 应用搜索和筛选条件
+    const searchTerm = document.getElementById('teacherPrefSearch')?.value.toLowerCase() || '';
+    const majorFilter = document.getElementById('teacherPrefMajorFilter')?.value || '';
     
-    if (preferencesData.length > 0) {
+    // 过滤数据并存储到全局变量
+    filteredTeacherPrefData = preferencesData.filter(pref => {
+        const teacher = teachersData.find(t => t.id === pref.teacherId);
+        
+        // 搜索条件：搜索老师姓名或工号
+        const matchesSearch = !searchTerm || 
+            (teacher && (teacher.name?.toLowerCase().includes(searchTerm) || 
+                         teacher.id?.toLowerCase().includes(searchTerm)));
+        
+        // 专业筛选
+        const matchesMajor = !majorFilter || 
+            (teacher && teacher.major === majorFilter);
+        
+        return matchesSearch && matchesMajor;
+    });
+    
+    // 更新总数和总页数
+    teacherPrefTotalItems = filteredTeacherPrefData.length;
+    teacherPrefTotalPages = Math.ceil(teacherPrefTotalItems / teacherPrefPageSize);
+    
+    // 确保当前页不超过总页数
+    if (teacherPrefCurrentPage > teacherPrefTotalPages) {
+        teacherPrefCurrentPage = Math.max(1, teacherPrefTotalPages);
+    }
+    
+    // 计算当前页显示的数据范围
+    const startIndex = (teacherPrefCurrentPage - 1) * teacherPrefPageSize;
+    const endIndex = Math.min(startIndex + teacherPrefPageSize, teacherPrefTotalItems);
+    const currentPageData = filteredTeacherPrefData.slice(startIndex, endIndex);
+    
+    // 更新分页信息显示
+    if (document.getElementById('teacherPrefTotalCount')) {
+        document.getElementById('teacherPrefTotalCount').textContent = teacherPrefTotalItems;
+    }
+    if (document.getElementById('teacherPrefCurrentPage')) {
+        document.getElementById('teacherPrefCurrentPage').textContent = teacherPrefCurrentPage;
+    }
+    if (document.getElementById('teacherPrefTotalPages')) {
+        document.getElementById('teacherPrefTotalPages').textContent = teacherPrefTotalPages || 1;
+    }
+    
+    // 渲染当前页数据
+    if (currentPageData.length > 0) {
         // 显示表格，隐藏空状态
         tableBody.parentElement.style.display = 'table';
         emptyState.style.display = 'none';
         
-        preferencesData.forEach(pref => {
+        currentPageData.forEach(pref => {
             const teacher = teachersData.find(t => t.id === pref.teacherId) || { id: pref.teacherId, name: '未知老师', title: '', major: '', research: '' };
             const row = document.createElement('tr');
             
@@ -567,6 +838,9 @@ function loadTeacherPreferences() {
         emptyState.style.display = 'block';
     }
     
+    // 渲染分页控件
+    renderTeacherPrefPaginationControls();
+    
     // 绑定搜索事件
     if (document.getElementById('teacherPrefSearch')) {
         document.getElementById('teacherPrefSearch').addEventListener('input', filterTeacherPreferences);
@@ -574,12 +848,88 @@ function loadTeacherPreferences() {
     if (document.getElementById('teacherPrefMajorFilter')) {
         document.getElementById('teacherPrefMajorFilter').addEventListener('change', filterTeacherPreferences);
     }
+    if (document.getElementById('teacherPrefPageSize')) {
+        document.getElementById('teacherPrefPageSize').addEventListener('change', function() {
+            teacherPrefPageSize = parseInt(this.value);
+            teacherPrefCurrentPage = 1;
+            loadTeacherPreferences();
+        });
+    }
 }
 
 // 筛选老师选择
 function filterTeacherPreferences() {
-    // 实现筛选逻辑
+    // 筛选条件变化时重置到第一页
+    teacherPrefCurrentPage = 1;
     loadTeacherPreferences();
+}
+
+// 更新团队分页信息显示
+function updateTeamPaginationInfo(startItem, endItem) {
+    document.getElementById('teamStartItem').textContent = teamTotalItems > 0 ? startItem : 0;
+    document.getElementById('teamEndItem').textContent = teamTotalItems > 0 ? endItem : 0;
+    document.getElementById('teamTotalItems').textContent = teamTotalItems;
+}
+
+// 添加页码按钮
+function addTeamPageButton(pageNum, isActive = false) {
+    const button = document.createElement('button');
+    button.className = `page-button ${isActive ? 'active' : ''}`;
+    button.textContent = pageNum;
+    button.onclick = function() {
+        teamCurrentPage = pageNum;
+        loadTeamList();
+    };
+    return button;
+}
+
+// 添加省略号按钮
+function addTeamEllipsisButton() {
+    const button = document.createElement('button');
+    button.className = 'page-button dots';
+    button.textContent = '...';
+    button.disabled = true;
+    return button;
+}
+
+// 渲染团队分页控件
+function renderTeamPaginationControls() {
+    const pageButtonsContainer = document.getElementById('teamPageButtons');
+    const prevButton = document.getElementById('teamPrevPage');
+    const nextButton = document.getElementById('teamNextPage');
+    
+    pageButtonsContainer.innerHTML = '';
+    
+    // 更新上一页和下一页按钮状态
+    prevButton.disabled = teamCurrentPage <= 1;
+    nextButton.disabled = teamCurrentPage >= teamTotalPages;
+    
+    // 简单的分页逻辑：显示当前页、首页、末页和相邻页
+    // 添加首页
+    if (teamCurrentPage > 2) {
+        pageButtonsContainer.appendChild(addTeamPageButton(1));
+        // 添加省略号
+        if (teamCurrentPage > 3) {
+            pageButtonsContainer.appendChild(addTeamEllipsisButton());
+        }
+    }
+    
+    // 添加当前页附近的页码
+    const startPage = Math.max(1, teamCurrentPage - 1);
+    const endPage = Math.min(teamTotalPages, teamCurrentPage + 1);
+    
+    for (let i = startPage; i <= endPage; i++) {
+        pageButtonsContainer.appendChild(addTeamPageButton(i, i === teamCurrentPage));
+    }
+    
+    // 添加末页
+    if (teamCurrentPage < teamTotalPages - 1) {
+        // 添加省略号
+        if (teamCurrentPage < teamTotalPages - 2) {
+            pageButtonsContainer.appendChild(addTeamEllipsisButton());
+        }
+        pageButtonsContainer.appendChild(addTeamPageButton(teamTotalPages));
+    }
 }
 
 // 加载学生组列表
@@ -598,13 +948,13 @@ function loadTeamList() {
     // 如果没有团队数据
     if (!teamsData || teamsData.length === 0) {
         emptyTeamState.style.display = 'block';
+        updateTeamPaginationInfo(0, 0);
+        renderTeamPaginationControls();
         return;
     }
     
-    emptyTeamState.style.display = 'none';
-    
-    // 对团队数据进行筛选
-    const filteredTeams = teamsData.filter(team => {
+    // 对团队数据进行筛选并保存到全局变量
+    filteredTeams = teamsData.filter(team => {
         // 搜索条件匹配
         const nameMatch = team.name ? team.name.toLowerCase().includes(searchText) : false;
         
@@ -629,7 +979,32 @@ function loadTeamList() {
         return (nameMatch || memberMatch) && gradeMatch;
     });
     
-    filteredTeams.forEach(team => {
+    // 更新总条目数和总页数
+    teamTotalItems = filteredTeams.length;
+    teamTotalPages = Math.max(1, Math.ceil(teamTotalItems / teamPageSize));
+    
+    // 确保当前页码有效
+    if (teamCurrentPage > teamTotalPages) {
+        teamCurrentPage = teamTotalPages;
+    }
+    
+    // 如果过滤后没有数据
+    if (teamTotalItems === 0) {
+        emptyTeamState.style.display = 'block';
+        updateTeamPaginationInfo(0, 0);
+        renderTeamPaginationControls();
+        return;
+    }
+    
+    emptyTeamState.style.display = 'none';
+    
+    // 计算当前页显示的数据范围
+    const startIndex = (teamCurrentPage - 1) * teamPageSize;
+    const endIndex = Math.min(startIndex + teamPageSize, teamTotalItems);
+    const currentPageTeams = filteredTeams.slice(startIndex, endIndex);
+    
+    // 渲染当前页数据
+    currentPageTeams.forEach(team => {
         const row = document.createElement('tr');
         
         // 获取组长信息
@@ -660,6 +1035,11 @@ function loadTeamList() {
         `;
         teamTableBody.appendChild(row);
     });
+    
+    // 更新分页信息和控件
+    updateTeamPaginationInfo(startIndex + 1, endIndex);
+    renderTeamPaginationControls();
+
 }
 
 // 查看学生组详情
@@ -726,7 +1106,23 @@ function loadMatchingResults() {
         }
     }
     
-    const results = window.matchingResultsData || [];
+    const allResults = window.matchingResultsData || [];
+    filteredMatchResultData = allResults;
+    
+    // 更新总数和总页数
+    matchResultTotalItems = filteredMatchResultData.length;
+    matchResultTotalPages = Math.max(1, Math.ceil(matchResultTotalItems / matchResultPageSize));
+    
+    // 确保当前页码有效
+    if (matchResultCurrentPage > matchResultTotalPages) {
+        matchResultCurrentPage = matchResultTotalPages;
+    }
+    
+    // 计算分页数据
+    const startIndex = (matchResultCurrentPage - 1) * matchResultPageSize;
+    const endIndex = startIndex + matchResultPageSize;
+    const paginatedResults = filteredMatchResultData.slice(startIndex, endIndex);
+    
     const resultTableBody = document.getElementById('resultTableBody');
     const emptyState = document.getElementById('emptyResultState');
     
@@ -738,7 +1134,7 @@ function loadMatchingResults() {
     
     resultTableBody.innerHTML = '';
     
-    if (results.length > 0) {
+    if (allResults.length > 0) {
         // 显示表格，隐藏空状态
         if (resultTableBody.parentElement) {
             resultTableBody.parentElement.style.display = 'table';
@@ -747,7 +1143,8 @@ function loadMatchingResults() {
             emptyState.style.display = 'none';
         }
         
-        results.forEach(result => {
+        // 渲染当前页数据
+        paginatedResults.forEach(result => {
             const team = window.getTeamById(result.teamId);
             const teacher = window.getTeacherById(result.teacherId);
             
@@ -791,6 +1188,10 @@ function loadMatchingResults() {
                 editMatchingResult(resultId);
             });
         });
+        
+        // 更新分页信息和控件
+        updateMatchResultPaginationInfo();
+        renderMatchResultPaginationControls();
     } else {
         // 隐藏表格，显示空状态
         if (resultTableBody.parentElement) {
@@ -799,6 +1200,12 @@ function loadMatchingResults() {
         if (emptyState) {
             emptyState.style.display = 'block';
         }
+        
+        // 重置分页信息
+        matchResultCurrentPage = 1;
+        matchResultTotalPages = 0;
+        matchResultTotalItems = 0;
+        updateMatchResultPaginationInfo();
     }
 }
 
@@ -1234,6 +1641,94 @@ function searchNotifications() {
 }
 
 function bindEvents() {
+    // 分页相关事件绑定
+    // 上一页按钮点击事件
+    document.getElementById('prevPage')?.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            loadStudentList();
+        }
+    });
+    
+    // 下一页按钮点击事件
+    document.getElementById('nextPage')?.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            loadStudentList();
+        }
+    });
+    
+    // 每页显示条数变化事件
+    document.getElementById('pageSizeSelect')?.addEventListener('change', (e) => {
+        pageSize = parseInt(e.target.value);
+        currentPage = 1; // 重置为第一页
+        loadStudentList();
+    });
+    
+    // 学生组分页控件事件绑定
+    // 上一页按钮点击事件
+    document.getElementById('teamPrevPage')?.addEventListener('click', () => {
+        if (teamCurrentPage > 1) {
+            teamCurrentPage--;
+            loadTeamList();
+        }
+    });
+    
+    // 下一页按钮点击事件
+    document.getElementById('teamNextPage')?.addEventListener('click', () => {
+        if (teamCurrentPage < teamTotalPages) {
+            teamCurrentPage++;
+            loadTeamList();
+        }
+    });
+    
+    // 每页显示条数变化事件
+    document.getElementById('teamPageSizeSelect')?.addEventListener('change', (e) => {
+        teamPageSize = parseInt(e.target.value);
+        teamCurrentPage = 1; // 重置为第一页
+        loadTeamList();
+    });
+    
+    // 学生组搜索框输入事件 - 重置页码
+    document.getElementById('teamSearch')?.addEventListener('input', () => {
+        teamCurrentPage = 1; // 重置为第一页
+        loadTeamList();
+    });
+    
+    // 学生组年级筛选变化事件 - 重置页码
+    document.getElementById('teamGradeFilter')?.addEventListener('change', () => {
+        teamCurrentPage = 1; // 重置为第一页
+        loadTeamList();
+    });
+    
+    // 学生组志愿分页控件事件绑定
+    // 每页显示条数变化事件
+    document.getElementById('studentPrefPageSizeSelect')?.addEventListener('change', (e) => {
+        studentPrefPageSize = parseInt(e.target.value);
+        studentPrefCurrentPage = 1; // 重置为第一页
+        loadStudentPreferences();
+    });
+    
+    // 导师分页相关事件绑定
+    // 每页显示条数变化事件
+    document.getElementById('teacherPageSize')?.addEventListener('change', (e) => {
+        teacherPageSize = parseInt(e.target.value);
+        teacherCurrentPage = 1; // 重置为第一页
+        loadTeacherList();
+    });
+    
+    // 导师搜索框输入事件 - 重置页码
+    document.getElementById('teacherSearch')?.addEventListener('input', () => {
+        teacherCurrentPage = 1; // 重置为第一页
+        loadTeacherList();
+    });
+    
+    // 导师专业筛选变化事件 - 重置页码
+    document.getElementById('teacherMajorFilter')?.addEventListener('change', () => {
+        teacherCurrentPage = 1; // 重置为第一页
+        loadTeacherList();
+    });
+    
     // 退出登录按钮事件
     document.getElementById('logoutBtn').addEventListener('click', function() {
         localStorage.removeItem('user');
@@ -1407,9 +1902,18 @@ function bindEvents() {
     }
     
     // 绑定事件
-    document.getElementById('studentSearch').addEventListener('input', loadStudentList);
-    document.getElementById('studentGradeFilter').addEventListener('change', loadStudentList);
-    document.getElementById('studentMajorFilter').addEventListener('change', loadStudentList);
+    document.getElementById('studentSearch').addEventListener('input', () => {
+    currentPage = 1; // 重置为第一页
+    loadStudentList();
+});
+document.getElementById('studentGradeFilter').addEventListener('change', () => {
+    currentPage = 1; // 重置为第一页
+    loadStudentList();
+});
+document.getElementById('studentMajorFilter').addEventListener('change', () => {
+    currentPage = 1; // 重置为第一页
+    loadStudentList();
+});
     
     // 导师搜索和筛选事件
     document.getElementById('teacherSearch').addEventListener('input', loadTeacherList);
@@ -1450,6 +1954,86 @@ function bindEvents() {
     });
 }
 
+// 更新分页信息显示
+function updatePaginationInfo(startItem, endItem, total) {
+    document.getElementById('startItem').textContent = total > 0 ? startItem : 0;
+    document.getElementById('endItem').textContent = total > 0 ? endItem : 0;
+    document.getElementById('totalItems').textContent = total;
+}
+
+// 渲染分页控件
+function renderPaginationControls() {
+    const pageButtonsDiv = document.getElementById('pageButtons');
+    const prevButton = document.getElementById('prevPage');
+    const nextButton = document.getElementById('nextPage');
+    
+    // 清空页码按钮
+    pageButtonsDiv.innerHTML = '';
+    
+    // 更新上一页/下一页按钮状态
+    prevButton.disabled = currentPage <= 1;
+    nextButton.disabled = currentPage >= totalPages;
+    
+    // 计算显示的页码范围（简单分页显示逻辑）
+    let startPage = 1;
+    let endPage = totalPages;
+    
+    // 如果页数较多，只显示当前页附近的页码
+    if (totalPages > 10) {
+        startPage = Math.max(1, currentPage - 4);
+        endPage = Math.min(totalPages, startPage + 9);
+        
+        // 调整起始页码以确保始终显示10个页码
+        if (endPage - startPage < 9) {
+            startPage = Math.max(1, endPage - 9);
+        }
+    }
+    
+    // 添加第一页按钮（如果不是第一页）
+    if (startPage > 1) {
+        addPageButton(1);
+        if (startPage > 2) {
+            addEllipsisButton();
+        }
+    }
+    
+    // 添加中间页码按钮
+    for (let i = startPage; i <= endPage; i++) {
+        addPageButton(i);
+    }
+    
+    // 添加最后一页按钮（如果不是最后一页）
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            addEllipsisButton();
+        }
+        addPageButton(totalPages);
+    }
+}
+
+// 添加页码按钮
+function addPageButton(pageNum) {
+    const pageButtonsDiv = document.getElementById('pageButtons');
+    const button = document.createElement('button');
+    button.className = `page-button ${pageNum === currentPage ? 'active' : ''}`;
+    button.textContent = pageNum;
+    button.addEventListener('click', () => {
+        currentPage = pageNum;
+        loadStudentList();
+    });
+    pageButtonsDiv.appendChild(button);
+}
+
+// 添加省略号按钮
+function addEllipsisButton() {
+    const pageButtonsDiv = document.getElementById('pageButtons');
+    const button = document.createElement('button');
+    button.className = 'page-button dots';
+    button.textContent = '...';
+    button.disabled = true;
+    pageButtonsDiv.appendChild(button);
+}
+
 // 更新专业下拉列表
 function updateMajorFilterOptions() {
     const students = window.studentsData;
@@ -1473,6 +2057,16 @@ function updateMajorFilterOptions() {
     updateTeacherMajorFilterOptions();
 }
 
+// 绑定匹配结果分页相关事件
+function bindMatchResultPaginationEvents() {
+    // 每页显示条数变化事件
+    document.getElementById('matchResultPageSizeSelect')?.addEventListener('change', (e) => {
+        matchResultPageSize = parseInt(e.target.value);
+        matchResultCurrentPage = 1; // 重置为第一页
+        loadMatchingResults();
+    });
+}
+
 // 更新导师专业下拉列表
 function updateTeacherMajorFilterOptions() {
     const teachers = window.teachersData;
@@ -1491,6 +2085,225 @@ function updateTeacherMajorFilterOptions() {
         option.textContent = major;
         majorFilter.appendChild(option);
     });
+}
+
+// 更新学生组志愿分页信息显示
+function updateStudentPrefPaginationInfo() {
+    const paginationInfo = document.getElementById('studentPrefPaginationInfo');
+    if (paginationInfo) {
+        paginationInfo.textContent = `共 ${studentPrefTotalItems} 条记录，第 ${studentPrefCurrentPage}/${studentPrefTotalPages} 页`;
+    }
+    
+    // 更新每页显示条数选择器
+    const pageSizeSelect = document.getElementById('studentPrefPageSizeSelect');
+    if (pageSizeSelect) {
+        pageSizeSelect.value = studentPrefPageSize;
+    }
+}
+
+// 渲染学生组志愿分页控件
+function renderStudentPrefPaginationControls() {
+    const paginationControls = document.getElementById('studentPrefPaginationControls');
+    if (!paginationControls) return;
+    
+    paginationControls.innerHTML = '';
+    
+    // 上一页按钮
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'pagination-btn';
+    prevBtn.textContent = '上一页';
+    prevBtn.disabled = studentPrefCurrentPage === 1;
+    prevBtn.onclick = () => {
+        if (studentPrefCurrentPage > 1) {
+            studentPrefCurrentPage--;
+            loadStudentPreferences();
+        }
+    };
+    paginationControls.appendChild(prevBtn);
+    
+    // 页码按钮容器
+    const pageNumbersContainer = document.createElement('div');
+    pageNumbersContainer.className = 'pagination-numbers';
+    
+    // 计算页码显示范围
+    const startPage = Math.max(1, studentPrefCurrentPage - 2);
+    const endPage = Math.min(studentPrefTotalPages, startPage + 4);
+    
+    // 调整起始页码，确保显示5个页码
+    const adjustedStartPage = Math.max(1, endPage - 4);
+    
+    // 添加页码按钮
+    for (let i = adjustedStartPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `pagination-btn ${i === studentPrefCurrentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => {
+            studentPrefCurrentPage = i;
+            loadStudentPreferences();
+        };
+        pageNumbersContainer.appendChild(pageBtn);
+    }
+    
+    paginationControls.appendChild(pageNumbersContainer);
+    
+    // 下一页按钮
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'pagination-btn';
+    nextBtn.textContent = '下一页';
+    nextBtn.disabled = teacherPrefCurrentPage === teacherPrefTotalPages;
+    nextBtn.onclick = () => {
+        if (teacherPrefCurrentPage < teacherPrefTotalPages) {
+            teacherPrefCurrentPage++;
+            loadTeacherPreferences();
+        }
+    };
+    paginationControls.appendChild(nextBtn);
+}
+
+// 更新老师选择分页信息显示
+function updateTeacherPrefPaginationInfo() {
+    const paginationInfo = document.getElementById('teacherPrefPaginationInfo');
+    if (paginationInfo) {
+        paginationInfo.textContent = `共 ${teacherPrefTotalItems} 条记录，第 ${teacherPrefCurrentPage}/${teacherPrefTotalPages} 页`;
+    }
+    
+    // 更新每页显示条数选择器
+    const pageSizeSelect = document.getElementById('teacherPrefPageSize');
+    if (pageSizeSelect) {
+        pageSizeSelect.value = teacherPrefPageSize;
+    }
+}
+
+// 更新匹配结果分页信息显示
+function updateMatchResultPaginationInfo() {
+    const paginationInfo = document.getElementById('matchResultPaginationInfo');
+    if (paginationInfo) {
+        paginationInfo.textContent = `共 ${matchResultTotalItems} 条记录，第 ${matchResultCurrentPage}/${matchResultTotalPages} 页`;
+    }
+    
+    // 更新每页显示条数选择器
+    const pageSizeSelect = document.getElementById('matchResultPageSizeSelect');
+    if (pageSizeSelect) {
+        pageSizeSelect.value = matchResultPageSize;
+    }
+}
+
+// 渲染匹配结果分页控件
+function renderMatchResultPaginationControls() {
+    const paginationControls = document.getElementById('matchResultPaginationControls');
+    if (!paginationControls) return;
+    
+    paginationControls.innerHTML = '';
+    
+    // 上一页按钮
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'pagination-btn';
+    prevBtn.textContent = '上一页';
+    prevBtn.disabled = matchResultCurrentPage === 1;
+    prevBtn.onclick = () => {
+        if (matchResultCurrentPage > 1) {
+            matchResultCurrentPage--;
+            loadMatchingResults();
+        }
+    };
+    paginationControls.appendChild(prevBtn);
+    
+    // 页码按钮容器
+    const pageNumbersContainer = document.createElement('div');
+    pageNumbersContainer.className = 'pagination-numbers';
+    
+    // 计算页码显示范围
+    const startPage = Math.max(1, matchResultCurrentPage - 2);
+    const endPage = Math.min(matchResultTotalPages, startPage + 4);
+    
+    // 调整起始页码，确保显示5个页码
+    const adjustedStartPage = Math.max(1, endPage - 4);
+    
+    // 添加页码按钮
+    for (let i = adjustedStartPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `pagination-btn ${i === matchResultCurrentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => {
+            matchResultCurrentPage = i;
+            loadMatchingResults();
+        };
+        pageNumbersContainer.appendChild(pageBtn);
+    }
+    
+    paginationControls.appendChild(pageNumbersContainer);
+    
+    // 下一页按钮
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'pagination-btn';
+    nextBtn.textContent = '下一页';
+    nextBtn.disabled = matchResultCurrentPage === matchResultTotalPages;
+    nextBtn.onclick = () => {
+        if (matchResultCurrentPage < matchResultTotalPages) {
+            matchResultCurrentPage++;
+            loadMatchingResults();
+        }
+    };
+    paginationControls.appendChild(nextBtn);
+}
+
+// 渲染老师选择分页控件
+function renderTeacherPrefPaginationControls() {
+    const paginationControls = document.getElementById('teacherPrefPaginationControls');
+    if (!paginationControls) return;
+    
+    paginationControls.innerHTML = '';
+    
+    // 上一页按钮
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'pagination-btn';
+    prevBtn.textContent = '上一页';
+    prevBtn.disabled = teacherPrefCurrentPage === 1;
+    prevBtn.onclick = () => {
+        if (teacherPrefCurrentPage > 1) {
+            teacherPrefCurrentPage--;
+            loadTeacherPreferences();
+        }
+    };
+    paginationControls.appendChild(prevBtn);
+    
+    // 页码按钮容器
+    const pageNumbersContainer = document.createElement('div');
+    pageNumbersContainer.className = 'pagination-numbers';
+    
+    // 计算页码显示范围
+    const startPage = Math.max(1, teacherPrefCurrentPage - 2);
+    const endPage = Math.min(teacherPrefTotalPages, startPage + 4);
+    
+    // 调整起始页码，确保显示5个页码
+    const adjustedStartPage = Math.max(1, endPage - 4);
+    
+    // 添加页码按钮
+    for (let i = adjustedStartPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `pagination-btn ${i === teacherPrefCurrentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => {
+            teacherPrefCurrentPage = i;
+            loadTeacherPreferences();
+        };
+        pageNumbersContainer.appendChild(pageBtn);
+    }
+    
+    paginationControls.appendChild(pageNumbersContainer);
+    
+    // 下一页按钮
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'pagination-btn';
+    nextBtn.textContent = '下一页';
+    nextBtn.disabled = teacherPrefCurrentPage === teacherPrefTotalPages;
+    nextBtn.onclick = () => {
+        if (teacherPrefCurrentPage < teacherPrefTotalPages) {
+            teacherPrefCurrentPage++;
+            loadTeacherPreferences();
+        }
+    };
+    paginationControls.appendChild(nextBtn);
 }
 
 // 更新学生志愿年级下拉列表
@@ -1875,7 +2688,8 @@ function saveSystemSettings() {
     const teacherPrefWeight = parseFloat(document.getElementById('teacherPrefWeight').value);
     const researchMatchWeight = parseFloat(document.getElementById('researchMatchWeight').value);
     const maxStudentsPerTeacher = parseInt(document.getElementById('maxStudentsPerTeacher').value);
-    const minStudentsPerGroup = parseInt(document.getElementById('minStudentsPerGroup').value);
+    const minStudentsPerGroup = parseInt(document.getElementById('minStudentsPerTeam').value);
+    const assignedMajor = document.getElementById('assignedMajor').value;
     const studentTeamPrefDeadline = document.getElementById('studentTeamPrefDeadline').value;
     const teacherSelectionDeadline = document.getElementById('teacherSelectionDeadline').value;
     
@@ -1900,6 +2714,7 @@ function saveSystemSettings() {
         researchMatchWeight: researchMatchWeight,
         maxStudentsPerTeacher: maxStudentsPerTeacher,
         minStudentsPerGroup: minStudentsPerGroup,
+        assignedMajor: assignedMajor,
         studentTeamPrefDeadline: studentTeamPrefDeadline,
         teacherSelectionDeadline: teacherSelectionDeadline
     }));

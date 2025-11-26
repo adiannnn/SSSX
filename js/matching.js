@@ -131,11 +131,28 @@ function performMatching(settings) {
     }
     
     // 筛选已提交题目的团队
-    const validTeams = teams.filter(team => team.topic);
-    console.log('有效团队数量(已选题):', validTeams.length);
+    let validTeams = teams.filter(team => team.topic);
+    
+    // 根据系统设置中的专业筛选团队
+    if (systemSettings.assignedMajor) {
+        validTeams = validTeams.filter(team => {
+            // 获取团队成员的专业信息
+            const members = team.members || [];
+            if (members.length === 0) {
+                return false;
+            }
+            
+            // 假设团队所有成员专业相同，取第一个成员的专业
+            const firstMemberId = members[0];
+            const member = window.getStudentById(firstMemberId);
+            return member && member.major === systemSettings.assignedMajor;
+        });
+    }
+    
+    console.log('有效团队数量(已选题且符合专业要求):', validTeams.length);
     
     if (validTeams.length === 0) {
-        console.error('错误: 没有有效的团队数据，所有团队都没有选题');
+        console.error('错误: 没有有效的团队数据，所有团队都没有选题或不符合专业要求');
     } else {
         console.log('有效团队列表:', validTeams.map(team => `团队ID: ${team.id}, 选题: ${team.topic.name || '未知'}`));
     }

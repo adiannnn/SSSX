@@ -205,75 +205,99 @@ body {
 .navbar, header.navbar {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 15px 30px;
+    padding: 20px 15px;
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    justify-content: flex-start;
     align-items: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
+    bottom: 0;
+    width: 250px;
     z-index: 1000;
     transition: all 0.3s ease;
     animation: fadeIn 0.5s ease-out;
+    overflow-y: auto;
 }
 
 .navbar:hover, header.navbar:hover {
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
+    box-shadow: 6px 0 25px rgba(0, 0, 0, 0.2);
 }
 
 .navbar h1, .navbar-brand h1 {
-    margin: 0;
-    font-size: 1.6rem;
+    margin: 0 0 30px 0;
+    font-size: 1.3rem;
     font-weight: 700;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    line-height: 1.4;
 }
 
 .nav-menu {
     display: flex;
-    gap: 15px;
-    margin: 0;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 30px 0;
+    width: 100%;
+    padding: 0;
 }
 
-.nav-menu a {
+.nav-menu a, .nav-menu .nav-link {
     color: white;
     text-decoration: none;
-    padding: 10px 20px;
-    border-radius: 30px;
+    padding: 12px 20px;
+    border-radius: 8px;
     transition: all 0.3s ease;
     font-size: 1rem;
     font-weight: 500;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.2);
+    display: block;
+    text-align: center;
+    width: 100%;
 }
 
-.nav-menu a:hover {
+.nav-menu a:hover, .nav-menu .nav-link:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-2px);
+    transform: translateX(5px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.user-info {
+.user-info, .user-controls {
     color: #ecf0f1;
     font-size: 1rem;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
     background: rgba(255, 255, 255, 0.1);
-    padding: 8px 16px;
-    border-radius: 30px;
+    padding: 12px 20px;
+    border-radius: 12px;
     backdrop-filter: blur(10px);
+    width: 100%;
+    margin-top: auto;
+}
+
+.user-controls {
+    background: transparent;
+    gap: 15px;
+}
+
+.navbar-brand {
+    width: 100%;
+    text-align: center;
 }
 
 /* 统一主内容区域布局 */
 .main-content, main.main-content {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: calc(100% - 270px);
+    margin: 0 0 0 auto;
     padding: 20px;
-    padding-top: 120px;
+    padding-left: 40px;
     min-height: 100vh;
     background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
